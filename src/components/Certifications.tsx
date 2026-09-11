@@ -59,7 +59,7 @@ export default function Certifications() {
           </h2>
         </div>
 
-        {/* 3D Horizontal Flip Card Grid */}
+        {/* 3D Vertical Flip Card Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {certifications.map((cert, idx) => (
             <div
@@ -68,7 +68,7 @@ export default function Certifications() {
               style={{ transitionDelay: `${idx * 80}ms` }}
               className="cert-card-wrapper perspective-1200 relative min-h-[220px] sm:min-h-[235px] w-full"
             >
-              {/* Horizontal 3D Flipper Element */}
+              {/* Vertical 3D Flipper Element */}
               <div className="cert-flipper preserve-3d w-full h-full relative">
                 
                 {/* ── FRONT FACE ── */}
@@ -89,12 +89,12 @@ export default function Certifications() {
 
                   <div className="pt-4 border-t border-card-border/50 flex items-center justify-between text-xs font-mono text-accent">
                     <span>Hover to flip</span>
-                    <span>↻</span>
+                    <span>⇅</span>
                   </div>
                 </div>
 
-                {/* ── BACK FACE (Horizontal Flip with Warm Amber Glow) ── */}
-                <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-xl bg-gradient-to-b from-[#1b1915] via-[#141312] to-[#0f0e0d] border border-accent/80 p-5 sm:p-6 flex flex-col justify-between overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_0_24px_rgba(217,164,65,0.28),0_8px_20px_rgba(0,0,0,0.5)]">
+                {/* ── BACK FACE (Vertical Flip with Warm Amber Glow) ── */}
+                <div className="absolute inset-0 backface-hidden rotate-x-180 rounded-xl bg-gradient-to-b from-[#1b1915] via-[#141312] to-[#0f0e0d] border border-accent/80 p-5 sm:p-6 flex flex-col justify-between overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_0_24px_rgba(217,164,65,0.28),0_8px_20px_rgba(0,0,0,0.5)]">
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-mono text-[11px] text-accent font-semibold tracking-wider uppercase flex items-center gap-1.5">
