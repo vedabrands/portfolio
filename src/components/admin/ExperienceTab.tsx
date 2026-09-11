@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Experience } from "@/types/database";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 interface ExperienceTabProps {
   initialExperience: Experience[];
@@ -54,23 +54,58 @@ export default function ExperienceTab({
     setMessage(null);
 
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
+      if (isSupabaseConfigured() && supabase) {
+        if (editingId) {
+          // UPDATE
+          const { error } = await supabase
+            .from("experience")
+            .update({
+              role: role.trim(),
+              company: company.trim(),
+              start_date: startDate.trim(),
+              end_date: endDate.trim() || "Present",
+              description: description.trim() || null,
+            })
+            .eq("id", editingId);
+
+          if (error) throw error;
+        } else {
+          // INSERT
+          const nextOrder =
+            items.length > 0
+              ? Math.max(...items.map((it) => it.display_order)) + 1
+              : 1;
+
+          const { data, error } = await supabase
+            .from("experience")
+            .insert({
+              role: role.trim(),
+              company: company.trim(),
+              start_date: startDate.trim() || "2023",
+              end_date: endDate.trim() || "Present",
+              description: description.trim() || null,
+              display_order: nextOrder,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          if (data) {
+            setItems([...items, data]);
+            setMessage({ text: `Added experience "${role} at ${company}"!`, type: "success" });
+            cancelEdit();
+            await fetch("/api/revalidate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ path: "/" }),
+            });
+            onSaved();
+            return;
+          }
+        }
+      }
 
       if (editingId) {
-        // UPDATE
-        const { error } = await supabase
-          .from("experience")
-          .update({
-            role: role.trim(),
-            company: company.trim(),
-            start_date: startDate.trim(),
-            end_date: endDate.trim() || "Present",
-            description: description.trim() || null,
-          })
-          .eq("id", editingId);
-
-        if (error) throw error;
-
         setItems(
           items.map((it) =>
             it.id === editingId
@@ -85,32 +120,23 @@ export default function ExperienceTab({
               : it
           )
         );
-
         setMessage({ text: `Updated experience "${role} at ${company}"!`, type: "success" });
         cancelEdit();
       } else {
-        // INSERT
         const nextOrder =
           items.length > 0
             ? Math.max(...items.map((it) => it.display_order)) + 1
             : 1;
-
-        const { data, error } = await supabase
-          .from("experience")
-          .insert({
-            role: role.trim(),
-            company: company.trim(),
-            start_date: startDate.trim() || "2023",
-            end_date: endDate.trim() || "Present",
-            description: description.trim() || null,
-            display_order: nextOrder,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        if (data) setItems([...items, data]);
-
+        const newLocalItem: Experience = {
+          id: `exp-${Date.now()}`,
+          role: role.trim(),
+          company: company.trim(),
+          start_date: startDate.trim() || "2023",
+          end_date: endDate.trim() || "Present",
+          description: description.trim() || null,
+          display_order: nextOrder,
+        };
+        setItems([...items, newLocalItem]);
         setMessage({ text: `Added experience "${role} at ${company}"!`, type: "success" });
         cancelEdit();
       }
@@ -135,10 +161,10 @@ export default function ExperienceTab({
 
     setSaving(true);
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
-
-      const { error } = await supabase.from("experience").delete().eq("id", id);
-      if (error) throw error;
+      if (isSupabaseConfigured() && supabase) {
+        const { error } = await supabase.from("experience").delete().eq("id", id);
+        if (error) throw error;
+      }
 
       setItems(items.filter((it) => it.id !== id));
 

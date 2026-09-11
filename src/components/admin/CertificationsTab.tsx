@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Certification } from "@/types/database";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import ImageUploader from "./ImageUploader";
 import Image from "next/image";
 
@@ -56,73 +56,100 @@ export default function CertificationsTab({
     setMessage(null);
 
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
+      if (isSupabaseConfigured() && supabase) {
+        if (editingId) {
+          // UPDATE
+          const { error } = await supabase
+            .from("certifications")
+            .update({
+              title: title.trim(),
+              issuer: issuer.trim(),
+              date_issued: dateIssued.trim(),
+              description: description.trim() || null,
+              image_url: imageUrl.trim() || null,
+            })
+            .eq("id", editingId);
 
-      if (editingId) {
-        // UPDATE
-        const { error } = await supabase
-          .from("certifications")
-          .update({
+          if (error) throw error;
+
+          // Update local state optimistically
+          setCerts(certs.map(c => c.id === editingId ? {
+            ...c,
             title: title.trim(),
             issuer: issuer.trim(),
             date_issued: dateIssued.trim(),
             description: description.trim() || null,
             image_url: imageUrl.trim() || null,
-          })
-          .eq("id", editingId);
+          } : c));
 
-        if (error) throw error;
+          setMessage({ text: `Updated certification "${title}"!`, type: "success" });
+          cancelEdit();
+        } else {
+          // INSERT
+          const nextOrder =
+            certs.length > 0
+              ? Math.max(...certs.map(c => c.display_order)) + 1
+              : 1;
 
-        setCerts(
-          certs.map((c) =>
-            c.id === editingId
-              ? {
-                  ...c,
-                  title: title.trim(),
-                  issuer: issuer.trim(),
-                  date_issued: dateIssued.trim(),
-                  description: description.trim() || null,
-                  image_url: imageUrl.trim() || null,
-                }
-              : c
-          )
-        );
+          const { data, error } = await supabase
+            .from("certifications")
+            .insert({
+              title: title.trim(),
+              issuer: issuer.trim(),
+              date_issued: dateIssued.trim() || "2024",
+              description: description.trim() || null,
+              image_url: imageUrl.trim() || null,
+              display_order: nextOrder,
+            })
+            .select()
+            .single();
 
-        setMessage({ text: `Updated certification "${title}"!`, type: "success" });
-        cancelEdit();
+          if (error) throw error;
+          if (data) {
+            setCerts([...certs, data]);
+            setMessage({ text: `Added certification "${title}"!`, type: "success" });
+            cancelEdit();
+          }
+        }
       } else {
-        // INSERT
-        const nextOrder =
-          certs.length > 0
-            ? Math.max(...certs.map((c) => c.display_order)) + 1
-            : 1;
-
-        const { data, error } = await supabase
-          .from("certifications")
-          .insert({
+        // Supabase not configured: local operation
+        if (editingId) {
+          setCerts(certs.map(c => c.id === editingId ? {
+            ...c,
+            title: title.trim(),
+            issuer: issuer.trim(),
+            date_issued: dateIssued.trim(),
+            description: description.trim() || null,
+            image_url: imageUrl.trim() || null,
+          } : c));
+          setMessage({ text: `Updated certification "${title}"!`, type: "success" });
+          cancelEdit();
+        } else {
+          const nextOrder =
+            certs.length > 0
+              ? Math.max(...certs.map(c => c.display_order)) + 1
+              : 1;
+          const newLocalItem: Certification = {
+            id: `cert-${Date.now()}`,
             title: title.trim(),
             issuer: issuer.trim(),
             date_issued: dateIssued.trim() || "2024",
             description: description.trim() || null,
             image_url: imageUrl.trim() || null,
             display_order: nextOrder,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        if (data) setCerts([...certs, data]);
-
-        setMessage({ text: `Added certification "${title}"!`, type: "success" });
-        cancelEdit();
+          };
+          setCerts([...certs, newLocalItem]);
+          setMessage({ text: `Added certification "${title}"!`, type: "success" });
+          cancelEdit();
+        }
       }
 
+      // Revalidate and onSaved (common for both DB and local)
       await fetch("/api/revalidate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path: "/" }),
       });
-
       onSaved();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to save certification.";
@@ -137,13 +164,13 @@ export default function CertificationsTab({
 
     setSaving(true);
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
-
-      const { error } = await supabase
-        .from("certifications")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
+      if (isSupabaseConfigured() && supabase) {
+        const { error } = await supabase
+          .from("certifications")
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+      }
 
       setCerts(certs.filter((c) => c.id !== id));
 

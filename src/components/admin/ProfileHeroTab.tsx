@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Profile, HeadlineItem } from "@/types/database";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 interface ProfileHeroTabProps {
   initialProfile: Profile | null;
@@ -71,8 +71,6 @@ export default function ProfileHeroTab({
     setMessage(null);
 
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
-
       const payload = {
         name,
         title,
@@ -80,24 +78,26 @@ export default function ProfileHeroTab({
         updated_at: new Date().toISOString(),
       };
 
-      if (profileId) {
-        const { error } = await supabase
-          .from("profile")
-          .update(payload)
-          .eq("id", profileId);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from("profile")
-          .insert({
-            ...payload,
-            bio: initialProfile?.bio || "Creative Developer bio.",
-            stats: initialProfile?.stats || {},
-          })
-          .select()
-          .single();
-        if (error) throw error;
-        if (data) setProfileId(data.id);
+      if (isSupabaseConfigured() && supabase) {
+        if (profileId) {
+          const { error } = await supabase
+            .from("profile")
+            .update(payload)
+            .eq("id", profileId);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase
+            .from("profile")
+            .insert({
+              ...payload,
+              bio: initialProfile?.bio || "Creative Developer bio.",
+              stats: initialProfile?.stats || {},
+            })
+            .select()
+            .single();
+          if (error) throw error;
+          if (data) setProfileId(data.id);
+        }
       }
 
       await fetch("/api/revalidate", {

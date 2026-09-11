@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Profile, StatsData } from "@/types/database";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 interface AboutStatsTabProps {
   initialProfile: Profile | null;
@@ -82,8 +82,6 @@ export default function AboutStatsTab({
     setMessage(null);
 
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
-
       // Build stats object
       const statsObj: StatsData = {};
       statsList.forEach((item) => {
@@ -91,25 +89,27 @@ export default function AboutStatsTab({
         statsObj[k] = item.value;
       });
 
-      if (initialProfile?.id) {
-        const { error } = await supabase
-          .from("profile")
-          .update({
+      if (isSupabaseConfigured() && supabase) {
+        if (initialProfile?.id) {
+          const { error } = await supabase
+            .from("profile")
+            .update({
+              bio,
+              stats: statsObj,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", initialProfile.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from("profile").insert({
+            name: "Your Name",
+            title: "Creative Developer & AI/Vision Engineer",
             bio,
             stats: statsObj,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", initialProfile.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("profile").insert({
-          name: "Your Name",
-          title: "Creative Developer & AI/Vision Engineer",
-          bio,
-          stats: statsObj,
-          hero_headlines: [],
-        });
-        if (error) throw error;
+            hero_headlines: [],
+          });
+          if (error) throw error;
+        }
       }
 
       await fetch("/api/revalidate", {
