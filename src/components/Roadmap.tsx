@@ -168,46 +168,56 @@ export default function Roadmap() {
   }, []);
 
   // Moving dot loop & auto-highlight synchronization
-  // Physical movement: dot traverses inside cards (hidden behind opaque card) so zero teleportation occurs
+  // Bidirectional physical movement: travels forward across all cards, then follows the reversed path back to Card 1
   useEffect(() => {
     let animId: number;
     let startTime: number | null = null;
 
     const STAGE_DURATIONS = [
-      1200, // Stage 0: Inside Card 0
-      8000, // Stage 1: Curve 0 travel
-      1800, // Stage 2: Move inside Card 1 (Card 1 glows)
-      8000, // Stage 3: Curve 1 travel
-      1800, // Stage 4: Move inside Card 2 (Card 2 glows)
-      8000, // Stage 5: Curve 2 travel
-      2000, // Stage 6: Move inside Card 3 (Card 3 glows)
+      1500, // Stage 0: Inside Card 0 (turnaround dwell)
+      7000, // Stage 1: Curve 0 travel (Card 0 -> Card 1)
+      1500, // Stage 2: Move inside Card 1 (Card 1 glows)
+      7000, // Stage 3: Curve 1 travel (Card 1 -> Card 2)
+      1500, // Stage 4: Move inside Card 2 (Card 2 glows)
+      7000, // Stage 5: Curve 2 travel (Card 2 -> Card 3)
+      1500, // Stage 6: Inside Card 3 (turnaround dwell)
     ];
-    const T_FADE = 1500;
-    const TOTAL_DURATION = STAGE_DURATIONS.reduce((a, b) => a + b, 0) + T_FADE; // ~32.3s
+
+    const FORWARD_TOTAL = STAGE_DURATIONS.reduce((a, b) => a + b, 0); // 27000ms
+    const ROUND_TRIP_TOTAL = FORWARD_TOTAL * 2; // 54000ms total bidirectional loop
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
-      const elapsed = (timestamp - startTime) % TOTAL_DURATION;
+      const elapsed = (timestamp - startTime) % ROUND_TRIP_TOTAL;
 
       if (stages.length === 7) {
+        const isForward = elapsed < FORWARD_TOTAL;
+        const legElapsed = isForward ? elapsed : elapsed - FORWARD_TOTAL;
+
         let accum = 0;
         let stageIndex = 0;
         let stageElapsed = 0;
-        let isFading = false;
 
-        for (let i = 0; i < STAGE_DURATIONS.length; i++) {
-          if (elapsed < accum + STAGE_DURATIONS[i]) {
-            stageIndex = i;
-            stageElapsed = elapsed - accum;
-            break;
+        if (isForward) {
+          // Forward journey: Card 0 -> Card 1 -> Card 2 -> Card 3
+          for (let i = 0; i < STAGE_DURATIONS.length; i++) {
+            if (legElapsed < accum + STAGE_DURATIONS[i]) {
+              stageIndex = i;
+              stageElapsed = legElapsed - accum;
+              break;
+            }
+            accum += STAGE_DURATIONS[i];
           }
-          accum += STAGE_DURATIONS[i];
-        }
-
-        if (elapsed >= accum) {
-          isFading = true;
-          stageIndex = 6;
-          stageElapsed = STAGE_DURATIONS[6];
+        } else {
+          // Reverse journey: Card 3 -> Card 2 -> Card 1 -> Card 0
+          for (let i = STAGE_DURATIONS.length - 1; i >= 0; i--) {
+            if (legElapsed < accum + STAGE_DURATIONS[i]) {
+              stageIndex = i;
+              stageElapsed = legElapsed - accum;
+              break;
+            }
+            accum += STAGE_DURATIONS[i];
+          }
         }
 
         const stage = stages[stageIndex];
@@ -215,17 +225,13 @@ export default function Roadmap() {
 
         if (stageEl && stageEl.getTotalLength) {
           const len = stageEl.getTotalLength();
-          const progress = Math.min(1, Math.max(0, stageElapsed / STAGE_DURATIONS[stageIndex]));
+          const rawProgress = Math.min(1, Math.max(0, stageElapsed / STAGE_DURATIONS[stageIndex]));
+          // In reverse leg, progress runs from 1 down to 0 along the path
+          const progress = isForward ? rawProgress : 1 - rawProgress;
           const pt = stageEl.getPointAtLength(progress * len);
 
-          if (isFading) {
-            const fade = 1 - (elapsed - accum) / T_FADE;
-            setDotPos({ x: pt.x, y: pt.y, opacity: Math.max(0, fade) });
-            setActiveDotCard(3);
-          } else {
-            setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
-            setActiveDotCard(stage.cardIndex);
-          }
+          setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
+          setActiveDotCard(stage.cardIndex);
         }
       }
 
