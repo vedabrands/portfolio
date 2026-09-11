@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import HeroScrubber from "./HeroScrubber";
+import {
+  SiReact,
+  SiNextdotjs,
+  SiTailwindcss,
+  SiNodedotjs,
+  SiDocker,
+} from "@icons-pack/react-simple-icons";
 
 const HEADLINES = [
   {
@@ -142,16 +149,7 @@ const CLUSTER_SETS: ClusterSet[] = [
     items: [
       {
         name: "React",
-        icon: (
-          <svg className="w-5 h-5" viewBox="-11.5 -10.23174 23 20.46348" fill="none" stroke="currentColor">
-            <circle cx="0" cy="0" r="2.05" fill="currentColor" stroke="none" />
-            <g stroke="currentColor" strokeWidth="1">
-              <ellipse rx="11" ry="4.2" />
-              <ellipse rx="11" ry="4.2" transform="rotate(60)" />
-              <ellipse rx="11" ry="4.2" transform="rotate(120)" />
-            </g>
-          </svg>
-        ),
+        icon: <SiReact color="default" className="w-5 h-5" />,
         offsetY: "-mt-1",
         rot: "-rotate-2",
         animClass: "anim-float-1",
@@ -159,11 +157,7 @@ const CLUSTER_SETS: ClusterSet[] = [
       },
       {
         name: "Next.js",
-        icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 1.5C6.2 1.5 1.5 6.2 1.5 12S6.2 22.5 12 22.5 22.5 17.8 22.5 12 17.8 1.5 12 1.5zm4.8 14.8l-5.6-7.3v7.3H9.7V7.7h1.5l5.6 7.4V7.7h1.5v8.6h-1.5z" />
-          </svg>
-        ),
+        icon: <SiNextdotjs color="default" className="w-5 h-5" />,
         offsetY: "mt-2.5",
         rot: "rotate-3",
         animClass: "anim-float-2",
@@ -171,11 +165,7 @@ const CLUSTER_SETS: ClusterSet[] = [
       },
       {
         name: "Tailwind CSS",
-        icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.975 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.975 12 6.001 12z" />
-          </svg>
-        ),
+        icon: <SiTailwindcss color="default" className="w-5 h-5" />,
         offsetY: "-mt-2",
         rot: "-rotate-3",
         animClass: "anim-float-3",
@@ -183,11 +173,7 @@ const CLUSTER_SETS: ClusterSet[] = [
       },
       {
         name: "Node.js",
-        icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2.5L3.5 7.4v9.8L12 22.1l8.5-4.9V7.4L12 2.5zm0 2.2l6.6 3.8v7.6L12 19.9l-6.6-3.8V8.5L12 4.7zm-1.8 5.6v4.8h1.8v-3.2l2.4 3.2h1.8v-4.8h-1.8v3.1l-2.4-3.1h-1.8z" />
-          </svg>
-        ),
+        icon: <SiNodedotjs color="default" className="w-5 h-5" />,
         offsetY: "mt-3",
         rot: "rotate-2",
         animClass: "anim-float-1",
@@ -195,11 +181,7 @@ const CLUSTER_SETS: ClusterSet[] = [
       },
       {
         name: "Docker",
-        icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M22.8 10.4c-.3-.2-1.2-.4-2.3-.1-.3-.7-.7-1.4-1.3-1.9l-.6-.4-.4.6c-.5.8-.7 1.8-.5 2.7-.8.5-1.9.7-3.1.8H1.3c-.3 1.4.1 2.9.9 4.1 1.6 2.3 4.3 3.8 7.3 3.8 6.4 0 11.7-4.4 12.6-10.4l.7-.8v-.5zm-14.7.1H6.3V8.7h1.8v1.8zm2.6 0H8.9V8.7h1.8v1.8zm2.6 0h-1.8V8.7h1.8v1.8zm2.6 0h-1.8V8.7h1.8v1.8zm-5.2-2.6H8.9V6.1h1.8v1.8zm2.6 0h-1.8V6.1h1.8v1.8zm2.6 0h-1.8V6.1h1.8v1.8z" />
-          </svg>
-        ),
+        icon: <SiDocker color="default" className="w-5 h-5" />,
         offsetY: "-mt-1.5",
         rot: "-rotate-2",
         animClass: "anim-float-2",
