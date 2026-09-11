@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import HeroScrubber from "./HeroScrubber";
 import {
   SiReact,
@@ -220,9 +221,14 @@ const CLUSTER_SETS: ClusterSet[] = [
       {
         name: "Claude",
         icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M13.5 2h-3v5.2l-3.7-3.7-2.1 2.1 3.7 3.7H3.2v3h5.2l-3.7 3.7 2.1 2.1 3.7-3.7V22h3v-5.2l3.7 3.7 2.1-2.1-3.7-3.7h5.2v-3h-5.2l3.7-3.7-2.1-2.1-3.7 3.7V2z" />
-          </svg>
+          <Image
+            src="/icons/ai-tools/claude.png"
+            alt="Claude"
+            width={48}
+            height={48}
+            unoptimized
+            className="w-full h-full object-cover rounded-[18%]"
+          />
         ),
         offsetY: "-mt-2",
         rot: "-rotate-3",
@@ -232,9 +238,14 @@ const CLUSTER_SETS: ClusterSet[] = [
       {
         name: "Gemini",
         icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C12 6.627 6.627 12 0 12c6.627 0 12 5.373 12 12 0-6.627 5.373-12 12-12-6.627 0-12-5.373-12-12z" />
-          </svg>
+          <Image
+            src="/icons/ai-tools/gemini.png"
+            alt="Gemini"
+            width={48}
+            height={48}
+            unoptimized
+            className="w-full h-full object-cover rounded-[18%]"
+          />
         ),
         offsetY: "mt-2.5",
         rot: "rotate-2",
@@ -244,10 +255,14 @@ const CLUSTER_SETS: ClusterSet[] = [
       {
         name: "ChatGPT",
         icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.5 10.5a4.3 4.3 0 0 0-.4-3.5 4.5 4.5 0 0 0-4.3-2.2 4.4 4.4 0 0 0-3.3-1.5 4.5 4.5 0 0 0-4.3 3.1 4.4 4.4 0 0 0-3 2.1 4.5 4.5 0 0 0 .5 4.8 4.3 4.3 0 0 0 .4 3.5 4.5 4.5 0 0 0 4.3 2.2 4.4 4.4 0 0 0 3.3 1.5 4.5 4.5 0 0 0 4.3-3.1 4.4 4.4 0 0 0 3-2.1 4.5 4.5 0 0 0-.5-4.8z" />
-            <path d="M12 7.5v9M8 10l8 4M8 14l8-4" />
-          </svg>
+          <Image
+            src="/icons/ai-tools/chatgpt.png"
+            alt="ChatGPT"
+            width={48}
+            height={48}
+            unoptimized
+            className="w-full h-full object-cover rounded-[18%]"
+          />
         ),
         offsetY: "-mt-1",
         rot: "-rotate-2",
@@ -255,54 +270,55 @@ const CLUSTER_SETS: ClusterSet[] = [
         delay: "1.3s",
       },
       {
-        name: "DeepSeek",
-        icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5c-3 0-5.5-2.2-5.5-5 0-1.8 1-3.4 2.5-4.3l1.1 1.8c-.9.5-1.6 1.4-1.6 2.5 0 1.7 1.6 3 3.5 3s3.5-1.3 3.5-3c0-1.1-.7-2-1.6-2.5l1.1-1.8c1.5.9 2.5 2.5 2.5 4.3 0 2.8-2.5 5-5.5 5z" />
-          </svg>
-        ),
-        offsetY: "mt-3",
-        rot: "rotate-4",
-        animClass: "anim-float-1",
-        delay: "1.9s",
-      },
-      {
         name: "Perplexity",
         icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4" />
-          </svg>
+          <Image
+            src="/icons/ai-tools/perplexity.png"
+            alt="Perplexity"
+            width={48}
+            height={48}
+            unoptimized
+            className="w-full h-full object-cover rounded-[18%]"
+          />
         ),
         offsetY: "-mt-2",
         rot: "-rotate-1",
         animClass: "anim-float-2",
-        delay: "2.5s",
+        delay: "1.9s",
       },
       {
         name: "Cursor",
         icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2l9 5.2v10.4l-9 5.2-9-5.2V7.2L12 2zm0 2.4L5.2 8.3 12 12.2l6.8-3.9L12 4.4zm7 5.2l-6 3.5v7.7l6-3.5V9.6zm-8 11.2v-7.7l-6-3.5v7.7l6 3.5z" />
-          </svg>
+          <Image
+            src="/icons/ai-tools/cursor.png"
+            alt="Cursor"
+            width={48}
+            height={48}
+            unoptimized
+            className="w-full h-full object-cover rounded-[18%]"
+          />
         ),
         offsetY: "mt-1",
         rot: "rotate-2",
         animClass: "anim-float-3",
-        delay: "3.1s",
+        delay: "2.5s",
       },
       {
-        name: "Antigravity",
+        name: "Kimi",
         icon: (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <circle cx="12" cy="12" r="3.5" fill="currentColor" />
-            <ellipse cx="12" cy="12" rx="9" ry="4" strokeLinecap="round" transform="rotate(-25 12 12)" />
-            <path d="M12 3v3M12 18v3" strokeLinecap="round" />
-          </svg>
+          <Image
+            src="/icons/ai-tools/kimi.png"
+            alt="Kimi"
+            width={48}
+            height={48}
+            unoptimized
+            className="w-full h-full object-cover rounded-[18%]"
+          />
         ),
         offsetY: "-mt-1",
         rot: "-rotate-3",
         animClass: "anim-float-1",
-        delay: "3.7s",
+        delay: "3.1s",
       },
     ],
   },
@@ -368,7 +384,7 @@ export default function Hero() {
                       >
                         <div
                           title={item.name}
-                          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-card/60 border border-card-border/70 backdrop-blur-sm flex items-center justify-center text-muted/60 cluster-icon shadow-sm cursor-pointer ${item.rot}`}
+                          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-[18%] bg-card/60 border border-card-border/70 backdrop-blur-sm flex items-center justify-center text-muted/60 cluster-icon shadow-sm cursor-pointer overflow-hidden ${item.rot}`}
                         >
                           <span className="sr-only">{item.name}</span>
                           {item.icon}
