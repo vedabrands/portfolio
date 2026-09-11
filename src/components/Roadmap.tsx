@@ -49,15 +49,10 @@ const cardLayout = [
   },
 ];
 
-interface Point {
-  x: number;
-  y: number;
-}
-
-interface SegmentData {
+interface PathStage {
   d: string;
-  start: Point;
-  end: Point;
+  isCurve: boolean;
+  cardIndex: number | null;
 }
 
 export default function Roadmap() {
@@ -65,7 +60,8 @@ export default function Roadmap() {
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const segRefs = useRef<(SVGPathElement | null)[]>([]);
 
-  const [segments, setSegments] = useState<SegmentData[]>([]);
+  const [stages, setStages] = useState<PathStage[]>([]);
+  const [mergedPath, setMergedPath] = useState<string>("");
   const [dotPos, setDotPos] = useState<{ x: number; y: number; opacity: number }>({
     x: 0,
     y: 0,
@@ -74,62 +70,94 @@ export default function Roadmap() {
   const [activeDotCard, setActiveDotCard] = useState<number | null>(null);
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
-  // Measure card boundary points and generate the sweeping curved wave paths
+  // Measure card boundary points and generate the sweeping wave paths merging into cards
   const updateWavePath = () => {
     if (!containerRef.current) return;
     const containerRect = containerRef.current.getBoundingClientRect();
-    const cardBoxes: { lx: number; rx: number; cy: number }[] = [];
+    const cardBoxes: { cx: number; cy: number; lx: number; rx: number }[] = [];
 
     cardRefs.current.forEach((card) => {
       if (card) {
         const r = card.getBoundingClientRect();
         cardBoxes.push({
+          cx: r.left - containerRect.left + r.width / 2,
+          cy: r.top - containerRect.top + r.height / 2,
           lx: r.left - containerRect.left,
           rx: r.right - containerRect.left,
-          cy: r.top - containerRect.top + r.height / 2,
         });
       }
     });
 
     if (cardBoxes.length === 4) {
       const [c0, c1, c2, c3] = cardBoxes;
-      const newSegments: SegmentData[] = [];
+      const PENETRATION = 22; // 22px inside the card edge ensures seamless merging under card border
 
-      // Segment 0 -> 1: Card 1 (high) to Card 2 (low) — dips down into a sweeping valley before rising into Card 2
-      const dx01 = c1.lx - c0.rx;
-      const dy01 = c1.cy - c0.cy;
-      const cp0A = { x: c0.rx + dx01 * 0.45, y: c0.cy + dy01 * 0.15 };
-      const cp0B = { x: c1.lx - dx01 * 0.35, y: c1.cy + 38 }; // sweeps into a deep valley trough
-      const d0 = `M ${c0.rx} ${c0.cy} C ${cp0A.x} ${cp0A.y}, ${cp0B.x} ${cp0B.y}, ${c1.lx} ${c1.cy}`;
-      newSegments.push({
-        d: d0,
-        start: { x: c0.rx, y: c0.cy },
-        end: { x: c1.lx, y: c1.cy },
-      });
+      const x0_start = c0.cx;
+      const y0_start = c0.cy;
+      const x0_exit = c0.rx - PENETRATION;
+      const y0_exit = c0.cy;
 
-      // Segment 1 -> 2: Card 2 (low) to Card 3 (high) — crests UP over a high arc before descending into Card 3
-      const dx12 = c2.lx - c1.rx;
-      const cp1A = { x: c1.rx + dx12 * 0.35, y: c1.cy - (c1.cy - c2.cy) * 0.3 - 48 };
-      const cp1B = { x: c2.lx - dx12 * 0.45, y: c2.cy - 52 }; // high crest wave above the cards
-      const d1 = `M ${c1.rx} ${c1.cy} C ${cp1A.x} ${cp1A.y}, ${cp1B.x} ${cp1B.y}, ${c2.lx} ${c2.cy}`;
-      newSegments.push({
-        d: d1,
-        start: { x: c1.rx, y: c1.cy },
-        end: { x: c2.lx, y: c2.cy },
-      });
+      const x1_enter = c1.lx + PENETRATION;
+      const y1_enter = c1.cy;
+      const x1_exit = c1.rx - PENETRATION;
+      const y1_exit = c1.cy;
 
-      // Segment 2 -> 3: Card 3 (high) to Card 4 (lowest) — cascading long graceful S-curve slide
-      const dx23 = c3.lx - c2.rx;
-      const cp2A = { x: c2.rx + dx23 * 0.48, y: c2.cy + 25 };
-      const cp2B = { x: c3.lx - dx23 * 0.38, y: c3.cy - 45 };
-      const d2 = `M ${c2.rx} ${c2.cy} C ${cp2A.x} ${cp2A.y}, ${cp2B.x} ${cp2B.y}, ${c3.lx} ${c3.cy}`;
-      newSegments.push({
-        d: d2,
-        start: { x: c2.rx, y: c2.cy },
-        end: { x: c3.lx, y: c3.cy },
-      });
+      const x2_enter = c2.lx + PENETRATION;
+      const y2_enter = c2.cy;
+      const x2_exit = c2.rx - PENETRATION;
+      const y2_exit = c2.cy;
 
-      setSegments(newSegments);
+      const x3_enter = c3.lx + PENETRATION;
+      const y3_enter = c3.cy;
+      const x3_end = c3.cx;
+      const y3_end = c3.cy;
+
+      // Curve 0: Card 0 exit to Card 1 entrance (sweeping valley wave)
+      const dx01 = x1_enter - x0_exit;
+      const dy01 = y1_enter - y0_exit;
+      const cp0A = { x: x0_exit + dx01 * 0.45, y: y0_exit + dy01 * 0.15 };
+      const cp0B = { x: x1_enter - dx01 * 0.35, y: y1_enter + 38 };
+
+      // Curve 1: Card 1 exit to Card 2 entrance (high cresting wave arc)
+      const dx12 = x2_enter - x1_exit;
+      const cp1A = { x: x1_exit + dx12 * 0.35, y: y1_exit - (y1_exit - y2_enter) * 0.3 - 48 };
+      const cp1B = { x: x2_enter - dx12 * 0.45, y: y2_enter - 52 };
+
+      // Curve 2: Card 2 exit to Card 3 entrance (cascading S-curve slide)
+      const dx23 = x3_enter - x2_exit;
+      const cp2A = { x: x2_exit + dx23 * 0.48, y: y2_exit + 25 };
+      const cp2B = { x: x3_enter - dx23 * 0.38, y: y3_enter - 45 };
+
+      // 7 Stages of continuous physical movement without any teleportation:
+      // Stage 0: Inside Card 0 (start dwell)
+      // Stage 1: Curve 0 in open space (Card 0 -> Card 1)
+      // Stage 2: Inside Card 1 (moves through card while Card 1 glows)
+      // Stage 3: Curve 1 in open space (Card 1 -> Card 2)
+      // Stage 4: Inside Card 2 (moves through card while Card 2 glows)
+      // Stage 5: Curve 2 in open space (Card 2 -> Card 3)
+      // Stage 6: Inside Card 3 (moves to center while Card 3 glows)
+      const stageData: PathStage[] = [
+        { d: `M ${x0_start} ${y0_start} L ${x0_exit} ${y0_exit}`, isCurve: false, cardIndex: 0 },
+        { d: `M ${x0_exit} ${y0_exit} C ${cp0A.x} ${cp0A.y}, ${cp0B.x} ${cp0B.y}, ${x1_enter} ${y1_enter}`, isCurve: true, cardIndex: null },
+        { d: `M ${x1_enter} ${y1_enter} L ${x1_exit} ${y1_exit}`, isCurve: false, cardIndex: 1 },
+        { d: `M ${x1_exit} ${y1_exit} C ${cp1A.x} ${cp1A.y}, ${cp1B.x} ${cp1B.y}, ${x2_enter} ${y2_enter}`, isCurve: true, cardIndex: null },
+        { d: `M ${x2_enter} ${y2_enter} L ${x2_exit} ${y2_exit}`, isCurve: false, cardIndex: 2 },
+        { d: `M ${x2_exit} ${y2_exit} C ${cp2A.x} ${cp2A.y}, ${cp2B.x} ${cp2B.y}, ${x3_enter} ${y3_enter}`, isCurve: true, cardIndex: null },
+        { d: `M ${x3_enter} ${y3_enter} L ${x3_end} ${y3_end}`, isCurve: false, cardIndex: 3 },
+      ];
+
+      // Single continuous merged path running into and behind the cards
+      const merged = `M ${x0_start} ${y0_start} ` +
+        `L ${x0_exit} ${y0_exit} ` +
+        `C ${cp0A.x} ${cp0A.y}, ${cp0B.x} ${cp0B.y}, ${x1_enter} ${y1_enter} ` +
+        `L ${x1_exit} ${y1_exit} ` +
+        `C ${cp1A.x} ${cp1A.y}, ${cp1B.x} ${cp1B.y}, ${x2_enter} ${y2_enter} ` +
+        `L ${x2_exit} ${y2_exit} ` +
+        `C ${cp2A.x} ${cp2A.y}, ${cp2B.x} ${cp2B.y}, ${x3_enter} ${y3_enter} ` +
+        `L ${x3_end} ${y3_end}`;
+
+      setStages(stageData);
+      setMergedPath(merged);
     }
   };
 
@@ -139,88 +167,65 @@ export default function Roadmap() {
     return () => window.removeEventListener("resize", updateWavePath);
   }, []);
 
-  // Moving dot loop & auto-highlight synchronization (slow, deliberate glide pace)
+  // Moving dot loop & auto-highlight synchronization
+  // Physical movement: dot traverses inside cards (hidden behind opaque card) so zero teleportation occurs
   useEffect(() => {
     let animId: number;
     let startTime: number | null = null;
 
-    // Timeline durations:
-    // 8000ms travel per segment = ~8.0s slow glide across each sweeping connector
-    // 1600ms dwell per card = steady arrival activation
-    // Total cycle = 1600 (card 0) + 8000 (seg 0) + 1600 (card 1) + 8000 (seg 1) + 1600 (card 2) + 8000 (seg 2) + 2000 (card 3) + 1400 (fade/reset) = ~32.2s
-    const T_DWELL = 1600;
-    const T_TRAVEL = 8000;
-    const T_FINAL = 2000;
-    const T_FADE = 1400;
-
-    const t0 = 0;
-    const t1 = t0 + T_DWELL; // 1600: start seg 0
-    const t2 = t1 + T_TRAVEL; // 9600: arrive card 1
-    const t3 = t2 + T_DWELL; // 11200: start seg 1
-    const t4 = t3 + T_TRAVEL; // 19200: arrive card 2
-    const t5 = t4 + T_DWELL; // 20800: start seg 2
-    const t6 = t5 + T_TRAVEL; // 28800: arrive card 3
-    const t7 = t6 + T_FINAL; // 30800: start fade out
-    const TOTAL_CYCLE = t7 + T_FADE; // 32200ms
+    const STAGE_DURATIONS = [
+      1200, // Stage 0: Inside Card 0
+      8000, // Stage 1: Curve 0 travel
+      1800, // Stage 2: Move inside Card 1 (Card 1 glows)
+      8000, // Stage 3: Curve 1 travel
+      1800, // Stage 4: Move inside Card 2 (Card 2 glows)
+      8000, // Stage 5: Curve 2 travel
+      2000, // Stage 6: Move inside Card 3 (Card 3 glows)
+    ];
+    const T_FADE = 1500;
+    const TOTAL_DURATION = STAGE_DURATIONS.reduce((a, b) => a + b, 0) + T_FADE; // ~32.3s
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
-      const elapsed = (timestamp - startTime) % TOTAL_CYCLE;
+      const elapsed = (timestamp - startTime) % TOTAL_DURATION;
 
-      if (segments.length === 3) {
-        if (elapsed < t1) {
-          // Card 0 dwell: dot sits at start of segment 0 (right edge of Card 1)
-          const pt = segments[0].start;
-          setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
-          setActiveDotCard(0);
-        } else if (elapsed < t2) {
-          // Segment 0 travel: Card 1 to Card 2
-          const segEl = segRefs.current[0];
-          if (segEl && segEl.getTotalLength) {
-            const progress = (elapsed - t1) / T_TRAVEL;
-            const pt = segEl.getPointAtLength(progress * segEl.getTotalLength());
-            setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
-            setActiveDotCard(progress > 0.88 ? 1 : null);
+      if (stages.length === 7) {
+        let accum = 0;
+        let stageIndex = 0;
+        let stageElapsed = 0;
+        let isFading = false;
+
+        for (let i = 0; i < STAGE_DURATIONS.length; i++) {
+          if (elapsed < accum + STAGE_DURATIONS[i]) {
+            stageIndex = i;
+            stageElapsed = elapsed - accum;
+            break;
           }
-        } else if (elapsed < t3) {
-          // Card 1 dwell: dot sits at end of segment 0 / start of segment 1
-          const pt = segments[0].end;
-          setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
-          setActiveDotCard(1);
-        } else if (elapsed < t4) {
-          // Segment 1 travel: Card 2 to Card 3
-          const segEl = segRefs.current[1];
-          if (segEl && segEl.getTotalLength) {
-            const progress = (elapsed - t3) / T_TRAVEL;
-            const pt = segEl.getPointAtLength(progress * segEl.getTotalLength());
+          accum += STAGE_DURATIONS[i];
+        }
+
+        if (elapsed >= accum) {
+          isFading = true;
+          stageIndex = 6;
+          stageElapsed = STAGE_DURATIONS[6];
+        }
+
+        const stage = stages[stageIndex];
+        const stageEl = segRefs.current[stageIndex];
+
+        if (stageEl && stageEl.getTotalLength) {
+          const len = stageEl.getTotalLength();
+          const progress = Math.min(1, Math.max(0, stageElapsed / STAGE_DURATIONS[stageIndex]));
+          const pt = stageEl.getPointAtLength(progress * len);
+
+          if (isFading) {
+            const fade = 1 - (elapsed - accum) / T_FADE;
+            setDotPos({ x: pt.x, y: pt.y, opacity: Math.max(0, fade) });
+            setActiveDotCard(3);
+          } else {
             setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
-            setActiveDotCard(progress > 0.88 ? 2 : null);
+            setActiveDotCard(stage.cardIndex);
           }
-        } else if (elapsed < t5) {
-          // Card 2 dwell: dot sits at end of segment 1 / start of segment 2
-          const pt = segments[1].end;
-          setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
-          setActiveDotCard(2);
-        } else if (elapsed < t6) {
-          // Segment 2 travel: Card 3 to Card 4
-          const segEl = segRefs.current[2];
-          if (segEl && segEl.getTotalLength) {
-            const progress = (elapsed - t5) / T_TRAVEL;
-            const pt = segEl.getPointAtLength(progress * segEl.getTotalLength());
-            setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
-            setActiveDotCard(progress > 0.88 ? 3 : null);
-          }
-        } else if (elapsed < t7) {
-          // Card 3 dwell: dot sits at end of segment 2 (entrance of Card 4)
-          const pt = segments[2].end;
-          setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
-          setActiveDotCard(3);
-        } else {
-          // Fade out and cycle back to Card 0
-          const fadeProgress = (elapsed - t7) / T_FADE;
-          const pt = segments[2].end;
-          setDotPos({ x: pt.x, y: pt.y, opacity: Math.max(0, 1 - fadeProgress * 1.8) });
-          setActiveDotCard(3);
         }
       }
 
@@ -229,7 +234,7 @@ export default function Roadmap() {
 
     animId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animId);
-  }, [segments]);
+  }, [stages]);
 
   return (
     <section id="roadmap" className="py-20 md:py-32 relative overflow-hidden">
@@ -278,56 +283,55 @@ export default function Roadmap() {
               </filter>
             </defs>
 
-            {/* Hidden paths for getPointAtLength measurements */}
-            {segments.map((seg, sIdx) => (
+            {/* Hidden individual stage paths for getPointAtLength measurement */}
+            {stages.map((stg, sIdx) => (
               <path
                 key={`meas-${sIdx}`}
                 ref={(el) => {
                   segRefs.current[sIdx] = el;
                 }}
-                d={seg.d}
+                d={stg.d}
                 fill="none"
                 stroke="transparent"
                 strokeWidth="1"
               />
             ))}
 
-            {/* Solid, Subtly Glowing Wave Connectors (Not Dashed!) */}
-            {segments.map((seg, sIdx) => (
-              <g key={`vis-${sIdx}`}>
+            {/* Seamless, Solid Luminous Wave Path merging into and behind cards */}
+            {mergedPath && (
+              <g>
                 {/* 1. Deep ambient glow stroke */}
                 <path
-                  d={seg.d}
+                  d={mergedPath}
                   fill="none"
                   stroke="rgba(217, 164, 65, 0.16)"
                   strokeWidth="7"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 {/* 2. Soft luminous aura */}
                 <path
-                  d={seg.d}
+                  d={mergedPath}
                   fill="none"
                   stroke="rgba(245, 205, 121, 0.35)"
                   strokeWidth="4"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                   filter="url(#lineGlow)"
                 />
                 {/* 3. Solid crisp gold core */}
                 <path
-                  d={seg.d}
+                  d={mergedPath}
                   fill="none"
                   stroke="url(#solidWaveGradient)"
                   strokeWidth="2.5"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
-
-                {/* Subtle terminal node anchors where line touches card edges */}
-                <circle cx={seg.start.x} cy={seg.start.y} r="3" fill="#D9A441" />
-                <circle cx={seg.end.x} cy={seg.end.y} r="3" fill="#F5CD79" />
               </g>
-            ))}
+            )}
 
-            {/* Glowing Traveling Dot */}
+            {/* Glowing Traveling Dot (Travels continuously along the path — naturally hidden behind opaque cards) */}
             {dotPos.opacity > 0 && (
               <g
                 transform={`translate(${dotPos.x}, ${dotPos.y})`}
