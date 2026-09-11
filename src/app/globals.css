@@ -212,6 +212,15 @@ a.btn-press:active {
   transform: rotateY(180deg) translateY(-4px) scale(1.02);
 }
 
+.cert-flipper {
+  transition: transform 600ms cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform;
+}
+
+.cert-card-wrapper:hover .cert-flipper {
+  transform: rotateY(180deg) scale(1.02);
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-reveal].revealed .card-float-1,
   [data-reveal].revealed .card-float-2,
@@ -219,14 +228,17 @@ a.btn-press:active {
   [data-reveal].revealed .card-float-4 {
     animation: none !important;
   }
-  .project-flipper {
+  .project-flipper,
+  .cert-flipper {
     transition: opacity 300ms ease !important;
     transform: none !important;
   }
-  .project-card-wrapper:hover .project-flipper {
+  .project-card-wrapper:hover .project-flipper,
+  .cert-card-wrapper:hover .cert-flipper {
     transform: none !important;
   }
 }
+
 
 
 
