@@ -39,12 +39,12 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex flex-col justify-between overflow-hidden select-none"
+      className="relative min-h-screen flex items-end pb-16 md:pb-24 overflow-hidden select-none"
     >
       {/* ── LAYER 1 (z-10): HEADLINE TEXT BEHIND THE PERSON SILHOUETTE ── */}
-      <div className="absolute inset-0 z-10 flex items-center pointer-events-none">
+      <div className="absolute inset-0 z-10 flex items-end pb-32 sm:pb-36 md:pb-40 pointer-events-none">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl">
+          <div className="flex flex-col gap-3 max-w-4xl">
             {/* Dynamic Eyebrow label — Clean crossfade without ghosting */}
             <div className="grid grid-cols-1 grid-rows-1 h-6 overflow-hidden">
               {HEADLINES.map((hl, i) => (
@@ -61,23 +61,23 @@ export default function Hero() {
               ))}
             </div>
 
-            {/* Giant Display Headline — Proportional clamp scaling & increased line spacing */}
-            <div className="grid grid-cols-1 grid-rows-1 min-h-[140px] sm:min-h-[180px] md:min-h-[220px] lg:min-h-[260px]">
+            {/* Giant Ultra-Bold Display Headline — Clean single-phrase display */}
+            <div className="grid grid-cols-1 grid-rows-1 min-h-[160px] sm:min-h-[220px] md:min-h-[280px] lg:min-h-[340px] xl:min-h-[380px]">
               {HEADLINES.map((hl, i) => (
                 <h1
                   key={`headline-${i}`}
-                  className={`col-start-1 row-start-1 font-display font-black text-foreground uppercase tracking-[-0.04em] leading-[0.94] transition-all ${
+                  className={`col-start-1 row-start-1 font-display font-black text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[11.5rem] text-foreground uppercase tracking-[-0.025em] leading-[0.88] transition-all ${
                     i === activeSector
                       ? "opacity-100 translate-y-0 scale-100 duration-250 delay-100 ease-out visible"
                       : "opacity-0 translate-y-6 scale-[0.97] duration-150 ease-in invisible pointer-events-none"
                   }`}
                   style={{
-                    fontSize: "clamp(3rem, 5.2vw + 1.8vh, 6.25rem)",
-                    WebkitTextStroke: "1px rgba(237, 237, 237, 0.3)",
+                    WebkitTextStroke: "1.5px rgba(237, 237, 237, 0.35)",
                   }}
                 >
-                  <span className="block mb-1">{hl.line1}</span>
-                  <span className="block">{hl.line2}</span>
+                  {hl.line1}
+                  <br />
+                  {hl.line2}
                 </h1>
               ))}
             </div>
@@ -90,54 +90,55 @@ export default function Hero() {
         <HeroScrubber onFrameChange={setFrameIndex} />
       </div>
 
-      {/* ── LAYER 3 (z-30): TOP-RIGHT SUPPORTING TEXT BLOCK ─────────────── */}
-      <div className="hidden sm:block absolute top-20 sm:top-24 md:top-28 right-4 sm:right-6 lg:right-8 z-30 max-w-[260px] sm:max-w-[280px] md:max-w-xs pointer-events-auto text-right md:text-left">
-        <div className="grid grid-cols-1 grid-rows-1 min-h-[80px]">
-          {HEADLINES.map((hl, i) => (
-            <div
-              key={`desc-${i}`}
-              className={`col-start-1 row-start-1 transition-all ${
-                i === activeSector
-                  ? "opacity-100 translate-y-0 duration-200 delay-75 ease-out visible"
-                  : "opacity-0 translate-y-3 duration-150 ease-in invisible pointer-events-none"
-              }`}
-            >
-              <p className="font-mono text-xs text-muted tracking-[0.15em] uppercase mb-2">
-                {hl.tagline}
-              </p>
-              <p className="text-xs sm:text-sm text-muted leading-relaxed">
-                {hl.desc}
-              </p>
+      {/* ── LAYER 3 (z-30): FOREGROUND CONTROLS (BUTTONS, HINTS, SUPPORTING) ─ */}
+      <div className="relative z-30 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pointer-events-none">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-10">
+          {/* Left CTA Buttons & Hint */}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-3 pointer-events-auto">
+              <a
+                href="#projects"
+                className="inline-flex items-center px-6 py-3 text-sm font-semibold rounded-full border border-card-border bg-card/90 backdrop-blur-sm text-foreground hover:bg-card hover:border-muted/50 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent shadow-lg"
+              >
+                View My Work
+              </a>
+              <a
+                href="#contact"
+                className="inline-flex items-center px-6 py-3 text-sm font-semibold rounded-full bg-accent text-background hover:bg-accent/90 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent shadow-lg"
+              >
+                Contact Me
+              </a>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* ── LAYER 3 (z-30): BOTTOM-LEFT FOREGROUND CONTROLS (BUTTONS & HINT) ─ */}
-      <div className="relative z-30 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-10 sm:pb-12 md:pb-14 mt-auto pointer-events-none">
-        <div className="flex flex-col gap-4 max-w-md">
-          <div className="flex flex-wrap items-center gap-3 pointer-events-auto">
-            <a
-              href="#projects"
-              className="inline-flex items-center px-6 py-3 text-sm font-semibold rounded-full border border-card-border bg-card/90 backdrop-blur-sm text-foreground hover:bg-card hover:border-muted/50 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent shadow-lg"
-            >
-              View My Work
-            </a>
-            <a
-              href="#contact"
-              className="inline-flex items-center px-6 py-3 text-sm font-semibold rounded-full bg-accent text-background hover:bg-accent/90 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent shadow-lg"
-            >
-              Contact Me
-            </a>
+            {/* Rotation hint & live frame counter */}
+            <div className="flex items-center gap-4 text-xs font-mono text-muted tracking-widest uppercase pointer-events-auto">
+              <span>↻ Hover, drag or tap to rotate</span>
+              <span className="text-muted/40">•</span>
+              <span className="text-accent font-bold" id="hero-frame-counter">
+                {String(frameIndex + 1).padStart(3, "0")} / 120
+              </span>
+            </div>
           </div>
 
-          {/* Rotation hint & live frame counter */}
-          <div className="flex items-center gap-4 text-xs font-mono text-muted tracking-widest uppercase pointer-events-auto">
-            <span>↻ Hover, drag or tap to rotate</span>
-            <span className="text-muted/40">•</span>
-            <span className="text-accent font-bold" id="hero-frame-counter">
-              {String(frameIndex + 1).padStart(3, "0")} / 120
-            </span>
+          {/* Right side supporting text — clean crossfade */}
+          <div className="max-w-xs grid grid-cols-1 grid-rows-1 min-h-[90px] pointer-events-auto">
+            {HEADLINES.map((hl, i) => (
+              <div
+                key={`desc-${i}`}
+                className={`col-start-1 row-start-1 transition-all ${
+                  i === activeSector
+                    ? "opacity-100 translate-y-0 duration-200 delay-75 ease-out visible"
+                    : "opacity-0 translate-y-3 duration-150 ease-in invisible pointer-events-none"
+                }`}
+              >
+                <p className="font-mono text-xs text-muted tracking-[0.15em] uppercase mb-2">
+                  {hl.tagline}
+                </p>
+                <p className="text-sm text-muted leading-relaxed">
+                  {hl.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
