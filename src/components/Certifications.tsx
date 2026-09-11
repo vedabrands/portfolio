@@ -35,7 +35,7 @@ export default function Certifications() {
   return (
     <section id="certifications" className="py-20 md:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <div data-reveal className="text-center mb-14">
           <p className="font-mono text-xs text-muted tracking-[0.2em] uppercase mb-4">
             {"// Credentials"}
           </p>
@@ -45,10 +45,12 @@ export default function Certifications() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {certifications.map((cert) => (
+          {certifications.map((cert, idx) => (
             <div
               key={cert.name}
-              className="bg-card border border-card-border rounded-xl p-6 flex flex-col justify-between"
+              data-reveal
+              style={{ transitionDelay: `${idx * 80}ms` }}
+              className="bg-card border border-card-border rounded-xl p-6 flex flex-col justify-between hover:-translate-y-1 hover:border-accent/40 hover:shadow-lg transition-all duration-300"
             >
               <div>
                 <h3 className="font-display text-base text-foreground mb-1">
@@ -59,7 +61,7 @@ export default function Certifications() {
               </div>
               <a
                 href={cert.link}
-                className="mt-4 text-sm text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="btn-press inline-flex items-center mt-4 text-sm text-accent hover:text-[#F5CD79] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 View Certificate →
               </a>

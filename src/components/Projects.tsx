@@ -33,7 +33,7 @@ export default function Projects() {
   return (
     <section id="projects" className="py-20 md:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <div data-reveal className="text-center mb-14">
           <p className="font-mono text-xs text-muted tracking-[0.2em] uppercase mb-4">
             {"// Selected Work"}
           </p>
@@ -43,10 +43,12 @@ export default function Projects() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {projects.map((project, idx) => (
             <div
               key={project.title}
-              className="bg-card border border-card-border rounded-xl overflow-hidden group"
+              data-reveal
+              style={{ transitionDelay: `${idx * 110}ms` }}
+              className="bg-card border border-card-border rounded-xl overflow-hidden group hover:-translate-y-1.5 hover:border-accent/40 hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300"
             >
               {/* Thumbnail placeholder */}
               <div className="h-48 bg-card-border/20 flex items-center justify-center">
@@ -56,7 +58,7 @@ export default function Projects() {
               </div>
 
               <div className="p-6">
-                <h3 className="font-display text-lg text-foreground mb-2">
+                <h3 className="font-display text-lg text-foreground mb-2 group-hover:text-accent transition-colors duration-200">
                   {project.title}
                 </h3>
                 <p className="text-sm text-muted leading-relaxed mb-4">
@@ -74,7 +76,7 @@ export default function Projects() {
                 </div>
                 <a
                   href={project.link}
-                  className="text-sm text-accent hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  className="btn-press inline-flex items-center text-sm text-accent hover:text-[#F5CD79] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
                   View Project →
                 </a>

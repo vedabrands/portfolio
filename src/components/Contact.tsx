@@ -9,7 +9,7 @@ export default function Contact() {
   return (
     <section id="contact" className="py-20 md:py-28 border-t border-card-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
+        <div data-reveal className="text-center mb-14">
           <p className="font-mono text-xs text-muted tracking-[0.2em] uppercase mb-4">
             {"// Get In Touch"}
           </p>
@@ -22,14 +22,15 @@ export default function Contact() {
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3">
-          {socials.map((social) => (
+        <div data-reveal style={{ transitionDelay: "150ms" }} className="flex flex-wrap justify-center gap-3">
+          {socials.map((social, idx) => (
             <a
               key={social.label}
               href={social.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm text-foreground bg-card border border-card-border rounded-full hover:bg-card-border/80 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              style={{ transitionDelay: `${idx * 60}ms` }}
+              className="btn-press inline-flex items-center gap-2 px-5 py-2.5 text-sm text-foreground bg-card border border-card-border rounded-full hover:bg-card-border/80 hover:scale-105 hover:border-accent/60 hover:text-[#F5CD79] active:scale-95 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               <span>{social.icon}</span>
               {social.label}

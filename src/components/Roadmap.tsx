@@ -245,7 +245,7 @@ export default function Roadmap() {
   return (
     <section id="roadmap" className="py-20 md:py-32 relative overflow-hidden">
       <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12">
-        <div className="text-center mb-16 md:mb-24">
+        <div data-reveal className="text-center mb-16 md:mb-24">
           <p className="font-mono text-xs text-muted tracking-[0.2em] uppercase mb-4">
             {"// Engineering Roadmap"}
           </p>
@@ -255,7 +255,7 @@ export default function Roadmap() {
         </div>
 
         {/* Roadmap Staggered Wave Container */}
-        <div ref={containerRef} className="relative pb-24 lg:pb-48">
+        <div ref={containerRef} data-reveal style={{ transitionDelay: "150ms" }} className="relative pb-24 lg:pb-48">
           {/* Connecting SVG Curved Wave Path & Moving Glowing Dot */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none z-0 hidden lg:block overflow-visible"

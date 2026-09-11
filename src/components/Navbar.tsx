@@ -30,9 +30,16 @@ export default function Navbar() {
               <a
                 key={link.href}
                 href={link.href}
-                className="px-3 py-2 text-sm text-muted hover:text-foreground transition-colors duration-200 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="group relative px-3 py-2 text-sm text-muted/80 hover:text-foreground transition-colors duration-200 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
-                {link.label}
+                <span className="relative z-10 transition-colors duration-200 group-hover:text-foreground">
+                  {link.label}
+                </span>
+                {/* Sliding Accent Underline Indicator */}
+                <span
+                  className="absolute bottom-1 left-3 right-3 h-[2px] bg-gradient-to-r from-accent via-[#F5CD79] to-accent rounded-full transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out shadow-[0_0_8px_rgba(217,164,65,0.6)] pointer-events-none"
+                  aria-hidden="true"
+                />
               </a>
             ))}
           </div>
@@ -41,7 +48,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             <a
               href="#contact"
-              className="hidden md:inline-flex items-center px-5 py-2 text-sm font-semibold rounded-full bg-accent text-background hover:bg-accent/90 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="btn-press hidden md:inline-flex items-center px-5 py-2 text-sm font-semibold rounded-full bg-accent text-background hover:bg-[#e4ad46] hover:scale-105 hover:shadow-[0_0_22px_rgba(217,164,65,0.5)] active:scale-95 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Hire Me
             </a>
@@ -82,7 +89,7 @@ export default function Navbar() {
             <a
               href="#contact"
               onClick={() => setMobileOpen(false)}
-              className="block mt-2 text-center px-5 py-2 text-sm font-semibold rounded-full bg-accent text-background hover:bg-accent/90 transition-colors"
+              className="btn-press block mt-2 text-center px-5 py-2 text-sm font-semibold rounded-full bg-accent text-background hover:bg-[#e4ad46] hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(217,164,65,0.45)] active:scale-95 transition-all duration-200"
             >
               Hire Me
             </a>

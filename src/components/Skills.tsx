@@ -17,7 +17,10 @@ export default function Skills() {
   return (
     <section id="expertise" className="py-20 md:py-28 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p className="font-mono text-xs text-muted tracking-[0.2em] uppercase text-center mb-10">
+        <p
+          data-reveal
+          className="font-mono text-xs text-muted tracking-[0.2em] uppercase text-center mb-10"
+        >
           {"// Expertise"}
         </p>
       </div>
@@ -25,6 +28,8 @@ export default function Skills() {
       {/* Marquee Wrapper with soft edge gradient masks */}
       <div
         id="skills"
+        data-reveal
+        style={{ transitionDelay: "150ms" }}
         className="group relative w-full overflow-hidden py-4 select-none"
       >
         {/* Left & Right Edge Gradient Fades for seamless entry/exit */}

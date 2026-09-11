@@ -434,13 +434,13 @@ export default function Hero() {
               <div className="flex flex-wrap items-center gap-3">
                 <a
                   href="#projects"
-                  className="inline-flex items-center px-6 py-3 text-sm font-semibold rounded-full border border-card-border bg-card/90 backdrop-blur-sm text-foreground hover:bg-card hover:border-muted/50 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent shadow-lg"
+                  className="btn-press inline-flex items-center px-6 py-3 text-sm font-semibold rounded-full border border-card-border bg-card/90 backdrop-blur-sm text-foreground hover:bg-card hover:border-muted/50 hover:scale-[1.03] active:scale-95 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent shadow-lg"
                 >
                   View My Work
                 </a>
                 <a
                   href="#contact"
-                  className="inline-flex items-center px-6 py-3 text-sm font-semibold rounded-full bg-accent text-background hover:bg-accent/90 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent shadow-lg"
+                  className="btn-press inline-flex items-center px-6 py-3 text-sm font-semibold rounded-full bg-accent text-background hover:bg-[#e4ad46] hover:scale-[1.03] hover:shadow-[0_0_22px_rgba(217,164,65,0.45)] active:scale-95 transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent shadow-lg"
                 >
                   Contact Me
                 </a>

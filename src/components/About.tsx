@@ -11,7 +11,7 @@ export default function About() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           {/* Left: heading + text */}
-          <div>
+          <div data-reveal>
             <p className="font-mono text-xs text-muted tracking-[0.2em] uppercase mb-4">
               {"// About Me"}
             </p>
@@ -36,9 +36,11 @@ export default function About() {
 
           {/* Right: stats grid */}
           <div className="grid grid-cols-2 gap-4 sm:gap-5">
-            {stats.map((stat) => (
+            {stats.map((stat, idx) => (
               <div
                 key={stat.label}
+                data-reveal
+                style={{ transitionDelay: `${idx * 100}ms` }}
                 className="group relative bg-gradient-to-b from-[#18181b] to-[#111113] border border-card-border/90 rounded-2xl p-6 sm:p-7 md:p-8 flex flex-col items-center justify-center text-center overflow-hidden transition-all duration-300 ease-out transform hover:scale-[1.04] hover:z-10 cursor-pointer shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),0_4px_12px_rgba(0,0,0,0.35)] hover:border-accent/60 hover:from-[#231e17] hover:to-[#171410] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.12),0_0_28px_rgba(217,164,65,0.22),0_12px_24px_rgba(0,0,0,0.5)]"
               >
                 {/* Subtle radial ambient glow on hover */}
