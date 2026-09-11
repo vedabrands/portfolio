@@ -3,8 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 
 const FRAME_COUNT = 120;
-const ARROW_STEP = 18; // ~15-20 frames per arrow click or tap
-const TAP_STEP = 18;
+const TAP_OR_ARROW_STEP = 20; // single tap anywhere or arrow click moves ~20 frames
 
 // Path to transparent PNG frames
 function frameSrc(index: number): string {
@@ -46,7 +45,7 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
     totalMoved: 0,
   });
 
-  /* ── Draw frame to canvas (clean alpha transparency) ────────── */
+  /* ── Draw frame with soft shoulder/edge gradient fade ────────── */
   const drawFrame = useCallback((idx: number) => {
     const canvas = canvasRef.current;
     const img = framesRef.current[idx];
@@ -60,6 +59,49 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0);
+
+    // ── REFINEMENT 3: SOFT-FADE THE HARD SHOULDER/EDGE CUTOFF ──
+    // Use 'source-atop' so gradient ONLY applies to the fabric of the person,
+    // leaving the transparent space around the head/neck 100% transparent.
+    ctx.save();
+    ctx.globalCompositeOperation = "source-atop";
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // 1. Bottom-left shoulder cutoff corner (curves along shoulder falloff)
+    const blGrad = ctx.createRadialGradient(0, h, 0, 0, h, Math.max(w * 0.16, h * 0.16));
+    blGrad.addColorStop(0, "rgba(175, 180, 188, 0.9)");
+    blGrad.addColorStop(0.45, "rgba(220, 224, 230, 0.45)");
+    blGrad.addColorStop(1, "rgba(242, 245, 248, 0)");
+    ctx.fillStyle = blGrad;
+    ctx.fillRect(0, h * 0.70, w * 0.22, h * 0.30);
+
+    // 2. Bottom-right shoulder cutoff corner (curves along shoulder falloff)
+    const brGrad = ctx.createRadialGradient(w, h, 0, w, h, Math.max(w * 0.16, h * 0.16));
+    brGrad.addColorStop(0, "rgba(175, 180, 188, 0.9)");
+    brGrad.addColorStop(0.45, "rgba(220, 224, 230, 0.45)");
+    brGrad.addColorStop(1, "rgba(242, 245, 248, 0)");
+    ctx.fillStyle = brGrad;
+    ctx.fillRect(w * 0.78, h * 0.70, w * 0.22, h * 0.30);
+
+    // 3. Absolute bottom hem edge (very bottom 5% only: 0.95 * h to h)
+    const bottomGrad = ctx.createLinearGradient(0, h * 0.95, 0, h);
+    bottomGrad.addColorStop(0, "rgba(242, 245, 248, 0)");
+    bottomGrad.addColorStop(0.5, "rgba(228, 232, 238, 0.4)");
+    bottomGrad.addColorStop(1, "rgba(180, 185, 192, 0.85)");
+    ctx.fillStyle = bottomGrad;
+    ctx.fillRect(0, h * 0.95, w, h * 0.05);
+
+    // 4. Subtle alpha feather at extreme 1% bottom edge
+    ctx.globalCompositeOperation = "destination-out";
+    const featherGrad = ctx.createLinearGradient(0, h * 0.99, 0, h);
+    featherGrad.addColorStop(0, "rgba(0, 0, 0, 0)");
+    featherGrad.addColorStop(1, "rgba(0, 0, 0, 0.5)");
+    ctx.fillStyle = featherGrad;
+    ctx.fillRect(0, h * 0.99, w, h * 0.01);
+
+    ctx.restore();
   }, []);
 
   /* ── Preload 120 transparent frames ─────────────────────────── */
@@ -81,7 +123,6 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
         count++;
         setLoaded(count);
 
-        // Draw initial frame as soon as frame 0 is ready
         if (i === 0 && lastDrawnFrameRef.current === -1) {
           lastDrawnFrameRef.current = 0;
           drawFrame(0);
@@ -142,7 +183,7 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
     };
   }, [drawFrame, onFrameChange]);
 
-  /* ── Pointer Drag: Full viewport drag ≈ 120-frame rotation ─── */
+  /* ── Pointer Handlers: Hover-driven & Drag & Tap-anywhere ───── */
   const onPointerDown = (e: React.PointerEvent) => {
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
     dragRef.current = {
@@ -155,34 +196,47 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
 
   const onPointerMove = (e: React.PointerEvent) => {
     const drag = dragRef.current;
-    if (!drag.active) return;
 
-    const deltaX = e.clientX - drag.lastX;
-    drag.lastX = e.clientX;
-    drag.totalMoved += Math.abs(deltaX);
+    // A) If dragging (mouse down or touch drag):
+    if (drag.active) {
+      const deltaX = e.clientX - drag.lastX;
+      drag.lastX = e.clientX;
+      drag.totalMoved += Math.abs(deltaX);
 
-    // Viewport-width mapping:
-    // Dragging across 1 viewport width = 120 frames
-    const viewportW = window.innerWidth || 1200;
-    const framesPerPixel = FRAME_COUNT / viewportW;
-    targetFrameRef.current += deltaX * framesPerPixel;
+      // Viewport-width mapping:
+      // Dragging across 1 viewport width = 120 frames
+      const viewportW = window.innerWidth || 1200;
+      const framesPerPixel = FRAME_COUNT / viewportW;
+      targetFrameRef.current += deltaX * framesPerPixel;
+      return;
+    }
+
+    // B) REFINEMENT 1: HOVER-DRIVEN ROTATION
+    // Moving the mouse freely without click across the hero rotates the model
+    if (e.pointerType === "mouse" || e.pointerType === "pen") {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect || rect.width <= 0) return;
+      const normX = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      targetFrameRef.current = normX * (FRAME_COUNT - 1);
+    }
   };
 
+  // C) REFINEMENT 2: TAP-ANYWHERE MOVES ~20 FRAMES SMOOTHLY
   const onPointerUp = (e: React.PointerEvent) => {
     const drag = dragRef.current;
     drag.active = false;
 
-    // If pointer barely moved, treat as tap
-    if (drag.totalMoved < 6 && containerRef.current) {
+    // If pointer moved less than 8px, treat as click/tap anywhere in hero
+    if (drag.totalMoved < 8 && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const midpoint = rect.width / 2;
 
-      // Tap right half -> animate forward ~18 frames, tap left -> animate backward ~18 frames
+      // Tap right half -> animate forward ~20 frames, tap left half -> animate backward ~20 frames
       if (clickX > midpoint) {
-        targetFrameRef.current += TAP_STEP;
+        targetFrameRef.current += TAP_OR_ARROW_STEP;
       } else {
-        targetFrameRef.current -= TAP_STEP;
+        targetFrameRef.current -= TAP_OR_ARROW_STEP;
       }
     }
   };
@@ -201,8 +255,8 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
 
   const startHold = useCallback((direction: 1 | -1) => {
     stopHold();
-    // Immediate step on click/tap
-    targetFrameRef.current += direction * ARROW_STEP;
+    // Immediate ~20 frame step on click/tap
+    targetFrameRef.current += direction * TAP_OR_ARROW_STEP;
 
     // After 220ms of holding, continuously auto-rotate
     holdTimerRef.current = setTimeout(() => {
@@ -229,10 +283,10 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowLeft") {
       e.preventDefault();
-      targetFrameRef.current -= ARROW_STEP;
+      targetFrameRef.current -= TAP_OR_ARROW_STEP;
     } else if (e.key === "ArrowRight") {
       e.preventDefault();
-      targetFrameRef.current += ARROW_STEP;
+      targetFrameRef.current += TAP_OR_ARROW_STEP;
     }
   };
 
@@ -241,11 +295,14 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 flex items-center justify-center select-none pointer-events-auto"
+      className="absolute inset-0 flex items-center justify-center select-none pointer-events-auto cursor-ew-resize"
       tabIndex={0}
       onKeyDown={onKeyDown}
+      onPointerMove={onPointerMove}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
       role="region"
-      aria-label={`Interactive 3D model rotation — frame ${activeFrame + 1} of ${FRAME_COUNT}. Drag, tap, or hold arrow keys to rotate.`}
+      aria-label={`Interactive 3D model rotation — frame ${activeFrame + 1} of ${FRAME_COUNT}. Hover, drag, tap, or hold arrow keys to rotate.`}
       data-loaded-frames={loaded}
       data-active-frame={activeFrame}
       data-ready={ready}
@@ -265,24 +322,16 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
         </div>
       )}
 
-      {/* Transparent Frame Canvas (clean true alpha transparency) */}
+      {/* Transparent Frame Canvas */}
       <canvas
         ref={canvasRef}
         className={`
           max-h-[85vh] w-auto object-contain
-          cursor-grab active:cursor-grabbing
-          pointer-events-auto
           transition-opacity duration-500
           ${ready || loaded > 0 ? "opacity-100" : "opacity-0"}
         `}
         style={{
           touchAction: "pan-y",
-        }}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => {
-          dragRef.current.active = false;
         }}
       />
 
@@ -303,9 +352,9 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
               text-foreground hover:text-white hover:bg-card
               transition-all duration-200 flex items-center justify-center
               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
-              hover:scale-105 active:scale-95 shadow-xl pointer-events-auto"
-            aria-label="Rotate counter-clockwise (click to step, hold to auto-rotate)"
-            title="Click to step, hold to rotate"
+              hover:scale-105 active:scale-95 shadow-xl pointer-events-auto cursor-pointer"
+            aria-label="Rotate counter-clockwise (click to step ~20 frames, hold to auto-rotate)"
+            title="Click to step ~20 frames, hold to rotate"
           >
             <svg
               width="22"
@@ -335,9 +384,9 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
               text-foreground hover:text-white hover:bg-card
               transition-all duration-200 flex items-center justify-center
               focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
-              hover:scale-105 active:scale-95 shadow-xl pointer-events-auto"
-            aria-label="Rotate clockwise (click to step, hold to auto-rotate)"
-            title="Click to step, hold to rotate"
+              hover:scale-105 active:scale-95 shadow-xl pointer-events-auto cursor-pointer"
+            aria-label="Rotate clockwise (click to step ~20 frames, hold to auto-rotate)"
+            title="Click to step ~20 frames, hold to rotate"
           >
             <svg
               width="22"

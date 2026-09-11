@@ -112,7 +112,7 @@ export default function Hero() {
 
             {/* Rotation hint & live frame counter */}
             <div className="flex items-center gap-4 text-xs font-mono text-muted tracking-widest uppercase pointer-events-auto">
-              <span>↻ Drag or tap to rotate</span>
+              <span>↻ Hover, drag or tap to rotate</span>
               <span className="text-muted/40">•</span>
               <span className="text-accent font-bold" id="hero-frame-counter">
                 {String(frameIndex + 1).padStart(3, "0")} / 120
