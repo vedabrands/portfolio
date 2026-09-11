@@ -65,6 +65,16 @@ export interface Experience {
   display_order: number;
 }
 
+export interface RoadmapItem {
+  id: string;
+  label?: string | null;
+  title: string;
+  description: string;
+  tag?: string | null;
+  tech?: string | null;
+  display_order: number;
+}
+
 export interface LinkItem {
   id: string;
   label: string;
@@ -100,6 +110,11 @@ export interface Database {
         Row: Experience;
         Insert: Omit<Experience, "id"> & { id?: string };
         Update: Partial<Experience>;
+      };
+      roadmap: {
+        Row: RoadmapItem;
+        Insert: Omit<RoadmapItem, "id"> & { id?: string };
+        Update: Partial<RoadmapItem>;
       };
       links: {
         Row: LinkItem;

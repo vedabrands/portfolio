@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Experience } from "@/types/database";
+import type { RoadmapItem } from "@/types/database";
 
 const DEFAULT_ROADMAP_CARDS = [
   {
@@ -57,17 +57,17 @@ interface PathStage {
 }
 
 interface RoadmapProps {
-  experience?: Experience[];
+  roadmap?: RoadmapItem[];
 }
 
-export default function Roadmap({ experience }: RoadmapProps) {
+export default function Roadmap({ roadmap }: RoadmapProps) {
   const roadmapCards =
-    experience && experience.length > 0
-      ? experience.slice(0, 4).map((exp, idx) => ({
-          id: `0${idx + 1}`,
-          title: exp.role || exp.company,
-          description: exp.description || "",
-          tech: `${exp.company} (${exp.start_date} - ${exp.end_date})`,
+    roadmap && roadmap.length > 0
+      ? roadmap.slice(0, 4).map((item, idx) => ({
+          id: item.label ? item.label.replace("ROOT ", "").trim() : `0${idx + 1}`,
+          title: item.title,
+          description: item.description,
+          tech: item.tag || item.tech || "Engineering",
         }))
       : DEFAULT_ROADMAP_CARDS;
   const containerRef = useRef<HTMLDivElement>(null);

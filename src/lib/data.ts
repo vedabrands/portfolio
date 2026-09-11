@@ -5,6 +5,7 @@ import type {
   Project,
   Certification,
   Experience,
+  RoadmapItem,
   LinkItem,
 } from "@/types/database";
 
@@ -188,6 +189,45 @@ export const DEFAULT_EXPERIENCE: Experience[] = [
   },
 ];
 
+export const DEFAULT_ROADMAP: RoadmapItem[] = [
+  {
+    id: "01",
+    label: "ROOT 01",
+    title: "Frontend Development",
+    description: "Architecting responsive, high-performance UI components.",
+    tag: "React & Tailwind",
+    tech: "React & Tailwind",
+    display_order: 1,
+  },
+  {
+    id: "02",
+    label: "ROOT 02",
+    title: "Backend Development",
+    description: "Building secure REST APIs and robust data pipelines.",
+    tag: "Node.js & Databases",
+    tech: "Node.js & Databases",
+    display_order: 2,
+  },
+  {
+    id: "03",
+    label: "ROOT 03",
+    title: "AI & Machine Learning",
+    description: "Integrating intelligent models and automated workflows.",
+    tag: "Generative AI & LLMs",
+    tech: "Generative AI & LLMs",
+    display_order: 3,
+  },
+  {
+    id: "04",
+    label: "ROOT 04",
+    title: "Cloud & Deployment",
+    description: "Containerizing systems and ensuring seamless production.",
+    tag: "Docker & CI/CD",
+    tech: "Docker & CI/CD",
+    display_order: 4,
+  },
+];
+
 export const DEFAULT_LINKS: LinkItem[] = [
   { id: "1", label: "Email", url: "mailto:unifiedram@gmail.com", icon_name: "mail", display_order: 1 },
   { id: "2", label: "GitHub", url: "https://github.com/vedabrands/portfolio", icon_name: "github", display_order: 2 },
@@ -280,6 +320,21 @@ export async function getExperience(): Promise<Experience[]> {
   }
 }
 
+export async function getRoadmap(): Promise<RoadmapItem[]> {
+  if (!isSupabaseConfigured() || !supabase) return DEFAULT_ROADMAP;
+  try {
+    const { data, error } = await supabase
+      .from("roadmap")
+      .select("*")
+      .order("display_order", { ascending: true });
+
+    if (error || !data || data.length === 0) return DEFAULT_ROADMAP;
+    return data as RoadmapItem[];
+  } catch {
+    return DEFAULT_ROADMAP;
+  }
+}
+
 export async function getLinks(): Promise<LinkItem[]> {
   if (!isSupabaseConfigured() || !supabase) return DEFAULT_LINKS;
   try {
@@ -296,13 +351,14 @@ export async function getLinks(): Promise<LinkItem[]> {
 }
 
 export async function getPortfolioData() {
-  const [profile, skills, projects, certifications, experience, links] =
+  const [profile, skills, projects, certifications, experience, roadmap, links] =
     await Promise.all([
       getProfile(),
       getSkills(),
       getProjects(),
       getCertifications(),
       getExperience(),
+      getRoadmap(),
       getLinks(),
     ]);
 
@@ -312,6 +368,7 @@ export async function getPortfolioData() {
     projects,
     certifications,
     experience,
+    roadmap,
     links,
   };
 }

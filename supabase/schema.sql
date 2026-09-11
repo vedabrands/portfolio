@@ -65,6 +65,17 @@ CREATE TABLE IF NOT EXISTS public.experience (
     display_order INTEGER NOT NULL DEFAULT 0
 );
 
+-- TABLE: roadmap
+CREATE TABLE IF NOT EXISTS public.roadmap (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    label TEXT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    tag TEXT,
+    tech TEXT,
+    display_order INTEGER NOT NULL DEFAULT 0
+);
+
 -- TABLE: links
 CREATE TABLE IF NOT EXISTS public.links (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -78,12 +89,13 @@ CREATE TABLE IF NOT EXISTS public.links (
 -- 3. ENABLE ROW LEVEL SECURITY (RLS) & CONFIGURE POLICIES
 -- ==============================================================================
 
--- Enable RLS on all 6 tables
+-- Enable RLS on all 7 tables
 ALTER TABLE public.profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.certifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.experience ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.roadmap ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.links ENABLE ROW LEVEL SECURITY;
 
 -- ── Policies for 'profile' ──
@@ -211,6 +223,31 @@ CREATE POLICY "Authenticated experience delete"
     TO authenticated
     USING (true);
 
+-- ── Policies for 'roadmap' ──
+DROP POLICY IF EXISTS "Public roadmap read access" ON public.roadmap;
+CREATE POLICY "Public roadmap read access"
+    ON public.roadmap FOR SELECT
+    USING (true);
+
+DROP POLICY IF EXISTS "Authenticated roadmap insert" ON public.roadmap;
+CREATE POLICY "Authenticated roadmap insert"
+    ON public.roadmap FOR INSERT
+    TO authenticated
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Authenticated roadmap update" ON public.roadmap;
+CREATE POLICY "Authenticated roadmap update"
+    ON public.roadmap FOR UPDATE
+    TO authenticated
+    USING (true)
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Authenticated roadmap delete" ON public.roadmap;
+CREATE POLICY "Authenticated roadmap delete"
+    ON public.roadmap FOR DELETE
+    TO authenticated
+    USING (true);
+
 -- ── Policies for 'links' ──
 DROP POLICY IF EXISTS "Public links read access" ON public.links;
 CREATE POLICY "Public links read access"
@@ -284,7 +321,7 @@ CREATE POLICY "Authenticated Media Delete"
 -- ==============================================================================
 
 -- Clean previous seed entries to prevent duplicate rows
-TRUNCATE TABLE public.profile, public.skills, public.projects, public.certifications, public.experience, public.links;
+TRUNCATE TABLE public.profile, public.skills, public.projects, public.certifications, public.experience, public.roadmap, public.links;
 
 -- ── 5.1 SEED: profile ──
 INSERT INTO public.profile (name, title, bio, hero_headlines, stats)
@@ -454,7 +491,43 @@ VALUES
         3
     );
 
--- ── 5.6 SEED: links ──
+-- ── 5.6 SEED: roadmap ──
+INSERT INTO public.roadmap (label, title, description, tag, tech, display_order)
+VALUES
+    (
+        'ROOT 01',
+        'Frontend Development',
+        'Architecting responsive, high-performance UI components.',
+        'React & Tailwind',
+        'React & Tailwind',
+        1
+    ),
+    (
+        'ROOT 02',
+        'Backend Development',
+        'Building secure REST APIs and robust data pipelines.',
+        'Node.js & Databases',
+        'Node.js & Databases',
+        2
+    ),
+    (
+        'ROOT 03',
+        'AI & Machine Learning',
+        'Integrating intelligent models and automated workflows.',
+        'Generative AI & LLMs',
+        'Generative AI & LLMs',
+        3
+    ),
+    (
+        'ROOT 04',
+        'Cloud & Deployment',
+        'Containerizing systems and ensuring seamless production.',
+        'Docker & CI/CD',
+        'Docker & CI/CD',
+        4
+    );
+
+-- ── 5.7 SEED: links ──
 INSERT INTO public.links (label, url, icon_name, display_order)
 VALUES
     ('Email', 'mailto:unifiedram@gmail.com', 'mail', 1),

@@ -20,7 +20,7 @@ export default async function Home() {
         <Hero headlines={data.profile?.hero_headlines} />
         <About bio={data.profile?.bio} stats={data.profile?.stats} />
         <Skills skills={data.skills} />
-        <Roadmap experience={data.experience} />
+        <Roadmap roadmap={data.roadmap} />
         <Projects projects={data.projects} />
         <Certifications certifications={data.certifications} />
         <Contact links={data.links} name={data.profile?.name} />

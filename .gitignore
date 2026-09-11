@@ -45,3 +45,7 @@ __pycache__/
 next-env.d.ts
 /scratch/
 
+# frame captures
+captures/*_frames/
+
+
