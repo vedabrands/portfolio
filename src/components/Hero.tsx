@@ -6,22 +6,25 @@ import HeroScrubber from "./HeroScrubber";
 const HEADLINES = [
   {
     eyebrow: "Hi, I'm Your Name",
-    line1: "Creative",
-    line2: "Developer",
+    lines: ["Creative", "Developer"],
+    fontSize: "text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[11.2rem]",
+    lineHeight: "leading-[0.91]",
     tagline: "// Turning Ideas Into Reality",
     desc: "Available for hire. Building fast, responsive web applications using modern tech stacks.",
   },
   {
     eyebrow: "Systems & Architecture",
-    line1: "Scalable",
-    line2: "Systems",
+    lines: ["Scalable", "Systems"],
+    fontSize: "text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[11.2rem]",
+    lineHeight: "leading-[0.91]",
     tagline: "// High-Performance Engineering",
     desc: "Designing robust data pipelines, scalable cloud infrastructure, and low-latency systems.",
   },
   {
     eyebrow: "Intelligent Interfaces",
-    line1: "AI & Vision",
-    line2: "Engineer",
+    lines: ["AI &", "Vision", "Engineer"],
+    fontSize: "text-6xl sm:text-7xl md:text-8xl lg:text-[7.5rem] xl:text-[8.5rem]",
+    lineHeight: "leading-[0.95]",
     tagline: "// Next-Gen AI Applications",
     desc: "Integrating state-of-the-art vision models and generative AI into fluid web experiences.",
   },
@@ -58,8 +61,8 @@ export default function Hero() {
         aria-hidden="true"
       />
 
-      {/* ── LAYER 1 (z-10): HEADLINE TEXT BEHIND THE PERSON SILHOUETTE ── */}
-      <div className="absolute inset-0 z-10 flex items-end pb-32 sm:pb-36 md:pb-40 pointer-events-none">
+      {/* ── LAYER 1 (z-10): HEADLINE TEXT BEHIND THE PERSON SILHOUETTE (TORSO LEVEL) ── */}
+      <div className="absolute inset-0 z-10 flex items-end pb-12 sm:pb-14 md:pb-16 lg:pb-20 pointer-events-none">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-3 max-w-4xl">
             {/* Dynamic Eyebrow label — Clean crossfade without ghosting */}
@@ -78,12 +81,12 @@ export default function Hero() {
               ))}
             </div>
 
-            {/* Giant Ultra-Bold Display Headline — Clean single-phrase display */}
-            <div className="grid grid-cols-1 grid-rows-1 min-h-[160px] sm:min-h-[220px] md:min-h-[280px] lg:min-h-[340px] xl:min-h-[380px]">
+            {/* Giant Ultra-Bold Display Headline — Lowered behind torso with expanded tracking & line height */}
+            <div className="grid grid-cols-1 grid-rows-1 min-h-[160px] sm:min-h-[200px] md:min-h-[260px] lg:min-h-[320px] xl:min-h-[360px]">
               {HEADLINES.map((hl, i) => (
                 <h1
                   key={`headline-${i}`}
-                  className={`col-start-1 row-start-1 font-display font-black text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[11.5rem] text-foreground uppercase tracking-[-0.025em] leading-[0.88] transition-all ${
+                  className={`col-start-1 row-start-1 font-display font-black ${hl.fontSize} text-foreground uppercase tracking-[0.035em] ${hl.lineHeight} transition-all ${
                     i === activeSector
                       ? "opacity-100 translate-y-0 scale-100 duration-250 delay-100 ease-out visible"
                       : "opacity-0 translate-y-6 scale-[0.97] duration-150 ease-in invisible pointer-events-none"
@@ -92,9 +95,11 @@ export default function Hero() {
                     WebkitTextStroke: "1.5px rgba(237, 237, 237, 0.35)",
                   }}
                 >
-                  {hl.line1}
-                  <br />
-                  {hl.line2}
+                  {hl.lines.map((line, lIdx) => (
+                    <span key={lIdx} className="block">
+                      {line}
+                    </span>
+                  ))}
                 </h1>
               ))}
             </div>
