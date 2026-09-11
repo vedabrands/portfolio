@@ -233,7 +233,9 @@ export default function Roadmap() {
               return (
                 <div
                   key={card.id}
-                  ref={(el) => (cardRefs.current[idx] = el)}
+                  ref={(el) => {
+                    cardRefs.current[idx] = el;
+                  }}
                   onMouseEnter={() => setHoveredCard(idx)}
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`group relative bg-gradient-to-b from-[#18181b] to-[#111113] border rounded-2xl p-7 flex flex-col justify-between min-h-[260px] overflow-hidden cursor-pointer transition-all duration-500 ease-out transform ${
