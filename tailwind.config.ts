@@ -17,9 +17,15 @@ const config: Config = {
         "card-border": "#232326",
       },
       fontFamily: {
-        display: ['var(--font-display)', 'sans-serif'],
-        body: ['var(--font-body)', 'sans-serif'],
-        mono: ['var(--font-mono)', 'monospace'],
+        display: [
+          "var(--font-display)",
+          '"Anton"',
+          '"Archivo Black"',
+          "Impact",
+          "sans-serif",
+        ],
+        body: ["var(--font-body)", '"Inter"', "sans-serif"],
+        mono: ["var(--font-mono)", '"JetBrains Mono"', "monospace"],
       },
       keyframes: {
         "fade-up": {

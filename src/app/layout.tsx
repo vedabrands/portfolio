@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Archivo_Black, Inter, JetBrains_Mono } from "next/font/google";
+import { Anton, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const archivoBlack = Archivo_Black({
+const anton = Anton({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-display",
@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${archivoBlack.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${anton.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
       <body>{children}</body>
     </html>
