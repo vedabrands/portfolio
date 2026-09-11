@@ -29,3 +29,64 @@
     }
   }
 }
+
+/* ── HERO DYNAMIC FLOATING ICON CLUSTER ANIMATIONS ── */
+@keyframes float-gentle-1 {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes float-gentle-2 {
+  0%, 100% {
+    transform: translateY(-4px);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@keyframes float-gentle-3 {
+  0%, 100% {
+    transform: translateY(4px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.anim-float-1 {
+  animation: float-gentle-1 4.5s ease-in-out infinite;
+}
+.anim-float-2 {
+  animation: float-gentle-2 5.2s ease-in-out infinite;
+}
+.anim-float-3 {
+  animation: float-gentle-3 4.8s ease-in-out infinite;
+}
+
+.cluster-wrapper {
+  display: inline-block;
+  will-change: transform;
+}
+.cluster-wrapper:hover {
+  animation-play-state: paused !important;
+}
+
+.cluster-icon {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow, border-color;
+}
+
+.cluster-icon:hover {
+  transform: scale(1.15) !important;
+  border-color: rgba(217, 164, 65, 0.9) !important;
+  color: #D9A441 !important;
+  background-color: #1c1a16 !important;
+  box-shadow: 0 0 22px rgba(217, 164, 65, 0.5), inset 0 0 8px rgba(217, 164, 65, 0.2) !important;
+  z-index: 40;
+}
+
