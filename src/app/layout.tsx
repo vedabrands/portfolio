@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, Inter, JetBrains_Mono } from "next/font/google";
+import AmbientGlow from "@/components/AmbientGlow";
 import "./globals.css";
 
 const anton = Anton({
@@ -37,7 +38,10 @@ export default function RootLayout({
       lang="en"
       className={`${anton.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body>{children}</body>
+      <body className="relative bg-background text-foreground antialiased selection:bg-accent selection:text-background">
+        <AmbientGlow />
+        {children}
+      </body>
     </html>
   );
 }

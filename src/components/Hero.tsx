@@ -41,6 +41,23 @@ export default function Hero() {
       id="hero"
       className="relative min-h-screen flex items-end pb-16 md:pb-24 overflow-hidden select-none"
     >
+      {/* ── LAYER 0 (z-0): SUBTLE HERO GRID PATTERN (HERO SECTION ONLY) ── */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px)
+          `,
+          backgroundSize: "60px 60px",
+          maskImage:
+            "radial-gradient(ellipse 85% 75% at 50% 50%, black 25%, transparent 80%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 85% 75% at 50% 50%, black 25%, transparent 80%)",
+        }}
+        aria-hidden="true"
+      />
+
       {/* ── LAYER 1 (z-10): HEADLINE TEXT BEHIND THE PERSON SILHOUETTE ── */}
       <div className="absolute inset-0 z-10 flex items-end pb-32 sm:pb-36 md:pb-40 pointer-events-none">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">

@@ -36,10 +36,27 @@ const config: Config = {
           "0%": { transform: "translateX(0%)" },
           "100%": { transform: "translateX(-100%)" },
         },
+        "drift-1": {
+          "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1)" },
+          "33%": { transform: "translate3d(80px, 100px, 0) scale(1.08)" },
+          "66%": { transform: "translate3d(-60px, 60px, 0) scale(0.94)" },
+        },
+        "drift-2": {
+          "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1)" },
+          "33%": { transform: "translate3d(-90px, -70px, 0) scale(1.10)" },
+          "66%": { transform: "translate3d(60px, -90px, 0) scale(0.92)" },
+        },
+        "drift-3": {
+          "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1)" },
+          "50%": { transform: "translate3d(70px, -50px, 0) scale(1.06)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.6s ease-out forwards",
         marquee: "marquee 26s linear infinite",
+        "drift-1": "drift-1 22s ease-in-out infinite",
+        "drift-2": "drift-2 26s ease-in-out infinite",
+        "drift-3": "drift-3 19s ease-in-out infinite",
       },
     },
   },
