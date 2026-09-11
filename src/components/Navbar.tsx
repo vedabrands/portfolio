@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import type { LinkItem } from "@/types/database";
 
-const navLinks = [
+const DEFAULT_NAV_LINKS = [
   { label: "Home", href: "#hero" },
   { label: "About", href: "#about" },
   { label: "Expertise", href: "#expertise" },
@@ -12,8 +13,22 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  links?: LinkItem[];
+  name?: string;
+}
+
+export default function Navbar({ links, name }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navLinks =
+    links && links.length > 0
+      ? links
+          .filter((l) => l.url.startsWith("#"))
+          .map((l) => ({ label: l.label, href: l.url }))
+      : DEFAULT_NAV_LINKS;
+
+  const displayName = name ? (name.includes(" ") ? `${name.split(" ")[0]}.` : `${name}.`) : "YourName.";
 
   return (
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-card-border/50">
@@ -21,7 +36,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <a href="#hero" className="font-display text-xl text-foreground tracking-tight">
-            YourName.
+            {displayName}
           </a>
 
           {/* Desktop Nav */}

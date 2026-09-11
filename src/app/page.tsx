@@ -7,20 +7,23 @@ import Projects from "@/components/Projects";
 import Certifications from "@/components/Certifications";
 import Contact from "@/components/Contact";
 import ScrollReveal from "@/components/ScrollReveal";
+import { getPortfolioData } from "@/lib/data";
 
-export default function Home() {
+export default async function Home() {
+  const data = await getPortfolioData();
+
   return (
     <>
       <ScrollReveal />
-      <Navbar />
+      <Navbar links={data.links} name={data.profile?.name} />
       <main>
-        <Hero />
-        <About />
-        <Skills />
-        <Roadmap />
-        <Projects />
-        <Certifications />
-        <Contact />
+        <Hero headlines={data.profile?.hero_headlines} />
+        <About bio={data.profile?.bio} stats={data.profile?.stats} />
+        <Skills skills={data.skills} />
+        <Roadmap experience={data.experience} />
+        <Projects projects={data.projects} />
+        <Certifications certifications={data.certifications} />
+        <Contact links={data.links} name={data.profile?.name} />
       </main>
     </>
   );

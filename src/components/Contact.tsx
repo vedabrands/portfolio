@@ -1,11 +1,40 @@
-const socials = [
-  { label: "Email", href: "mailto:hello@example.com", icon: "✉" },
-  { label: "GitHub", href: "https://github.com", icon: "⌘" },
+import type { LinkItem } from "@/types/database";
+
+const DEFAULT_SOCIALS = [
+  { label: "Email", href: "mailto:unifiedram@gmail.com", icon: "✉" },
+  { label: "GitHub", href: "https://github.com/vedabrands/portfolio", icon: "⌘" },
   { label: "LinkedIn", href: "https://linkedin.com", icon: "in" },
   { label: "Twitter", href: "https://twitter.com", icon: "𝕏" },
 ];
 
-export default function Contact() {
+function getIconForLink(label: string, iconName?: string | null): string {
+  if (iconName === "mail" || label.toLowerCase().includes("email")) return "✉";
+  if (iconName === "github" || label.toLowerCase().includes("github")) return "⌘";
+  if (iconName === "linkedin" || label.toLowerCase().includes("linkedin")) return "in";
+  if (iconName === "twitter" || label.toLowerCase().includes("twitter")) return "𝕏";
+  return "↗";
+}
+
+interface ContactProps {
+  links?: LinkItem[];
+  name?: string;
+}
+
+export default function Contact({ links, name }: ContactProps) {
+  const socialLinks =
+    links && links.length > 0
+      ? links
+          .filter((l) => !l.url.startsWith("#"))
+          .map((l) => ({
+            label: l.label,
+            href: l.url,
+            icon: getIconForLink(l.label, l.icon_name),
+          }))
+      : DEFAULT_SOCIALS;
+
+  const currentYear = new Date().getFullYear();
+  const displayName = name || "YourName";
+
   return (
     <section id="contact" className="py-20 md:py-28 border-t border-card-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +52,7 @@ export default function Contact() {
         </div>
 
         <div data-reveal style={{ transitionDelay: "150ms" }} className="flex flex-wrap justify-center gap-3">
-          {socials.map((social, idx) => (
+          {socialLinks.map((social, idx) => (
             <a
               key={social.label}
               href={social.href}
@@ -40,7 +69,7 @@ export default function Contact() {
 
         <div className="mt-20 text-center">
           <p className="font-mono text-xs text-muted">
-            © 2024 YourName. All rights reserved.
+            © {currentYear} {displayName}. All rights reserved.
           </p>
         </div>
       </div>

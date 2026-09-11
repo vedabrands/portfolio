@@ -1,52 +1,60 @@
-const certifications = [
+import type { Certification } from "@/types/database";
+
+const DEFAULT_CERTIFICATIONS: Certification[] = [
   {
-    name: "AWS Certified Solutions Architect",
+    id: "1",
+    title: "AWS Certified Solutions Architect",
     issuer: "Amazon Web Services",
-    date: "2024",
-    link: "#",
-    // [PLACEHOLDER] Coverage note for AWS Certified Solutions Architect:
-    note: "Validates technical expertise in designing and deploying resilient, highly available, secure, and cost-optimized distributed systems on AWS.",
-    topics: "Cloud Architecture • VPC & IAM • Distributed Storage",
+    date_issued: "2024",
+    description: "Validates technical expertise in designing and deploying resilient, highly available, secure, and cost-optimized distributed systems on AWS.",
+    display_order: 1,
   },
   {
-    name: "Google Cloud Professional",
+    id: "2",
+    title: "Google Cloud Professional",
     issuer: "Google Cloud",
-    date: "2024",
-    link: "#",
-    // [PLACEHOLDER] Coverage note for Google Cloud Professional:
-    note: "Demonstrates advanced proficiency in architecting robust cloud infrastructure, containerized deployments, and managed data analytics pipelines on GCP.",
-    topics: "GCP Infrastructure • Cloud Run • BigQuery Pipelines",
+    date_issued: "2024",
+    description: "Demonstrates advanced proficiency in architecting robust cloud infrastructure, containerized deployments, and managed data analytics pipelines on GCP.",
+    display_order: 2,
   },
   {
-    name: "TensorFlow Developer Certificate",
+    id: "3",
+    title: "TensorFlow Developer Certificate",
     issuer: "Google",
-    date: "2023",
-    link: "#",
-    // [PLACEHOLDER] Coverage note for TensorFlow Developer Certificate:
-    note: "Certifies foundational capabilities in architecting, training, and fine-tuning deep neural networks, convolutional vision models, and NLP architectures.",
-    topics: "Deep Learning • CNNs & Computer Vision • NLP Models",
+    date_issued: "2023",
+    description: "Certifies foundational capabilities in architecting, training, and fine-tuning deep neural networks, convolutional vision models, and NLP architectures.",
+    display_order: 3,
   },
   {
-    name: "Meta Frontend Developer",
+    id: "4",
+    title: "Meta Frontend Developer",
     issuer: "Meta",
-    date: "2023",
-    link: "#",
-    // [PLACEHOLDER] Coverage note for Meta Frontend Developer:
-    note: "Validates end-to-end mastery of modern React component design patterns, responsive layout engineering, state trees, and web accessibility standards.",
-    topics: "React.js • Advanced JavaScript • WCAG Accessibility",
+    date_issued: "2023",
+    description: "Validates end-to-end mastery of modern React component design patterns, responsive layout engineering, state trees, and web accessibility standards.",
+    display_order: 4,
   },
   {
-    name: "Azure AI Fundamentals",
+    id: "5",
+    title: "Azure AI Fundamentals",
     issuer: "Microsoft",
-    date: "2023",
-    link: "#",
-    // [PLACEHOLDER] Coverage note for Azure AI Fundamentals:
-    note: "Demonstrates core understanding of machine learning principles, generative AI capabilities, and computer vision services hosted on Microsoft Azure.",
-    topics: "Azure Cognitive Services • Conversational AI • Computer Vision",
+    date_issued: "2023",
+    description: "Demonstrates core understanding of machine learning principles, generative AI capabilities, and computer vision services hosted on Microsoft Azure.",
+    display_order: 5,
   },
 ];
 
-export default function Certifications() {
+interface CertificationsProps {
+  certifications?: Certification[];
+}
+
+export default function Certifications({
+  certifications,
+}: CertificationsProps) {
+  const certList =
+    certifications && certifications.length > 0
+      ? certifications
+      : DEFAULT_CERTIFICATIONS;
+
   return (
     <section id="certifications" className="py-20 md:py-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,16 +69,16 @@ export default function Certifications() {
 
         {/* 3D Vertical Flip Card Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {certifications.map((cert, idx) => (
+          {certList.map((cert, idx) => (
             <div
-              key={cert.name}
+              key={cert.id || cert.title}
               data-reveal
               style={{ transitionDelay: `${idx * 80}ms` }}
               className="cert-card-wrapper perspective-1200 relative min-h-[220px] sm:min-h-[235px] w-full"
             >
               {/* Vertical 3D Flipper Element */}
               <div className="cert-flipper preserve-3d w-full h-full relative">
-                
+
                 {/* ── FRONT FACE ── */}
                 <div className="absolute inset-0 backface-hidden rounded-xl bg-card border border-card-border/90 p-6 flex flex-col justify-between overflow-hidden shadow-lg select-none">
                   <div>
@@ -79,11 +87,11 @@ export default function Certifications() {
                         {cert.issuer}
                       </span>
                       <span className="font-mono text-xs text-muted/60 bg-card-border/40 px-2 py-0.5 rounded-full">
-                        {cert.date}
+                        {cert.date_issued}
                       </span>
                     </div>
                     <h3 className="font-display text-base sm:text-lg text-foreground mb-1 leading-snug">
-                      {cert.name}
+                      {cert.title}
                     </h3>
                   </div>
 
@@ -102,26 +110,23 @@ export default function Certifications() {
                         {cert.issuer}
                       </span>
                       <span className="font-mono text-xs text-accent/90 bg-accent/10 border border-accent/30 px-2 py-0.5 rounded-full">
-                        Issued {cert.date}
+                        Issued {cert.date_issued}
                       </span>
                     </div>
                     <h3 className="font-display text-sm sm:text-base text-[#F5CD79] mb-2 leading-snug drop-shadow-[0_0_8px_rgba(217,164,65,0.3)]">
-                      {cert.name}
+                      {cert.title}
                     </h3>
                     <p className="text-xs text-muted leading-relaxed mb-2">
-                      {cert.note}
-                    </p>
-                    <p className="text-[11px] font-mono text-accent/80 truncate">
-                      {cert.topics}
+                      {cert.description}
                     </p>
                   </div>
 
                   <div className="pt-3 border-t border-card-border/60 flex items-center justify-between text-xs">
                     <a
-                      href={cert.link}
+                      href={cert.image_url || "#"}
                       className="btn-press inline-flex items-center gap-1 text-accent hover:text-[#F5CD79] font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     >
-                      <span>Verify Credential</span>
+                      <span>View Credential</span>
                       <span>↗</span>
                     </a>
                     <span className="font-mono text-[10px] text-muted/50 tracking-wider">

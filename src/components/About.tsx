@@ -1,11 +1,18 @@
-const stats = [
-  { label: "Years Experience", value: "5+" },
-  { label: "Projects Completed", value: "50+" },
-  { label: "Happy Clients", value: "30+" },
-  { label: "Certifications", value: "10+" },
-];
+import type { StatsData } from "@/types/database";
 
-export default function About() {
+interface AboutProps {
+  bio?: string;
+  stats?: StatsData;
+}
+
+export default function About({ bio, stats }: AboutProps) {
+  const displayStats = [
+    { label: "Years Experience", value: stats?.years_experience ?? "5+" },
+    { label: "Projects Completed", value: stats?.projects_completed ?? "50+" },
+    { label: "Happy Clients", value: stats?.happy_clients ?? "30+" },
+    { label: "Certifications", value: stats?.certifications_count ?? "10+" },
+  ];
+
   return (
     <section id="about" className="py-20 md:py-28 border-t border-card-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,24 +26,30 @@ export default function About() {
               Passionate About Building the Future
             </h2>
             <div className="space-y-4 text-sm md:text-base text-muted leading-relaxed">
-              <p>
-                I&apos;m a creative developer with a deep passion for crafting
-                digital experiences that merge cutting-edge technology with
-                thoughtful design. With expertise spanning full-stack
-                development, AI/ML, and cloud infrastructure, I build systems
-                that scale.
-              </p>
-              <p>
-                My approach combines clean code architecture with a keen eye for
-                user experience, ensuring every project not only works flawlessly
-                but feels intuitive and polished.
-              </p>
+              {bio ? (
+                <p>{bio}</p>
+              ) : (
+                <>
+                  <p>
+                    I&apos;m a creative developer with a deep passion for crafting
+                    digital experiences that merge cutting-edge technology with
+                    thoughtful design. With expertise spanning full-stack
+                    development, AI/ML, and cloud infrastructure, I build systems
+                    that scale.
+                  </p>
+                  <p>
+                    My approach combines clean code architecture with a keen eye for
+                    user experience, ensuring every project not only works flawlessly
+                    but feels intuitive and polished.
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
           {/* Right: stats grid */}
           <div className="grid grid-cols-2 gap-4 sm:gap-5">
-            {stats.map((stat, idx) => (
+            {displayStats.map((stat, idx) => (
               <div
                 key={stat.label}
                 data-reveal

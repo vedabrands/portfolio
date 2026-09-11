@@ -1,4 +1,6 @@
-const skills = [
+import type { Skill } from "@/types/database";
+
+const DEFAULT_SKILLS = [
   "Generative AI",
   "LLMs",
   "Computer Vision",
@@ -13,7 +15,15 @@ const skills = [
   "Vector Databases",
 ];
 
-export default function Skills() {
+interface SkillsProps {
+  skills?: Skill[] | string[];
+}
+
+export default function Skills({ skills }: SkillsProps) {
+  const skillList: string[] = skills
+    ? skills.map((s) => (typeof s === "string" ? s : s.name))
+    : DEFAULT_SKILLS;
+
   return (
     <section id="expertise" className="py-20 md:py-28 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -40,7 +50,7 @@ export default function Skills() {
         <div className="flex w-max">
           {/* First Track */}
           <div className="flex shrink-0 items-center gap-3 sm:gap-4 pr-3 sm:pr-4 animate-marquee group-hover:[animation-play-state:paused]">
-            {skills.map((skill, index) => (
+            {skillList.map((skill, index) => (
               <span
                 key={`skill-1-${index}`}
                 className="relative px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-medium tracking-wide text-foreground bg-gradient-to-b from-[#18181b] to-[#111113] border border-card-border/90 rounded-full cursor-pointer whitespace-nowrap shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),0_2px_8px_rgba(0,0,0,0.3)] transition-all duration-300 ease-out transform hover:scale-[1.06] hover:z-30 hover:border-accent/70 hover:from-[#241e17] hover:to-[#171410] hover:text-[#F5CD79] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_0_24px_rgba(217,164,65,0.28),0_8px_20px_rgba(0,0,0,0.5)]"
@@ -55,7 +65,7 @@ export default function Skills() {
             className="flex shrink-0 items-center gap-3 sm:gap-4 pr-3 sm:pr-4 animate-marquee group-hover:[animation-play-state:paused]"
             aria-hidden="true"
           >
-            {skills.map((skill, index) => (
+            {skillList.map((skill, index) => (
               <span
                 key={`skill-2-${index}`}
                 className="relative px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-medium tracking-wide text-foreground bg-gradient-to-b from-[#18181b] to-[#111113] border border-card-border/90 rounded-full cursor-pointer whitespace-nowrap shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),0_2px_8px_rgba(0,0,0,0.3)] transition-all duration-300 ease-out transform hover:scale-[1.06] hover:z-30 hover:border-accent/70 hover:from-[#241e17] hover:to-[#171410] hover:text-[#F5CD79] hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_0_24px_rgba(217,164,65,0.28),0_8px_20px_rgba(0,0,0,0.5)]"

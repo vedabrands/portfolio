@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import HeroScrubber from "./HeroScrubber";
+import type { HeadlineItem } from "@/types/database";
 import {
   SiReact,
   SiNextdotjs,
@@ -324,7 +325,11 @@ const CLUSTER_SETS: ClusterSet[] = [
   },
 ];
 
-export default function Hero() {
+interface HeroProps {
+  headlines?: HeadlineItem[];
+}
+
+export default function Hero({ headlines }: HeroProps = {}) {
   const [frameIndex, setFrameIndex] = useState(0);
 
   // 120 frames total: 3 sectors of 40 frames each
@@ -332,6 +337,7 @@ export default function Hero() {
   // Sector 1: frames 20-59 (centered around 40)
   // Sector 2: frames 60-99 (centered around 80)
   const activeSector = Math.floor(((frameIndex + 20) % 120) / 40);
+  const headlineList = headlines && headlines.length === 3 ? headlines : HEADLINES;
 
   return (
     <section
@@ -398,7 +404,7 @@ export default function Hero() {
 
             {/* Eyebrow & Display Headline Group */}
             <div className="grid grid-cols-1 grid-rows-1 min-h-[190px] sm:min-h-[220px] lg:min-h-[250px] xl:min-h-[270px] items-start">
-              {HEADLINES.map((hl, i) => (
+              {headlineList.map((hl, i) => (
                 <div
                   key={`headline-block-${i}`}
                   className={`col-start-1 row-start-1 flex flex-col justify-start transition-all ${
@@ -466,7 +472,7 @@ export default function Hero() {
 
             {/* Repositioned Supporting Text Block (centered beneath the photo) */}
             <div className="w-full max-w-md mx-auto grid grid-cols-1 grid-rows-1 min-h-[76px] text-center pt-1">
-              {HEADLINES.map((hl, i) => (
+              {headlineList.map((hl, i) => (
                 <div
                   key={`desc-${i}`}
                   className={`col-start-1 row-start-1 flex flex-col items-center transition-all ${
