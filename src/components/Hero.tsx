@@ -62,45 +62,39 @@ export default function Hero() {
       />
 
       {/* ── LAYER 1 (z-10): HEADLINE TEXT BEHIND THE PERSON SILHOUETTE (TORSO LEVEL) ── */}
-      <div className="absolute inset-0 z-10 flex items-end pb-12 sm:pb-14 md:pb-16 lg:pb-20 pointer-events-none">
+      <div className="absolute inset-0 z-10 flex items-end pb-44 sm:pb-52 md:pb-60 lg:pb-68 xl:pb-72 pointer-events-none">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 max-w-4xl">
-            {/* Dynamic Eyebrow label — Clean crossfade without ghosting */}
-            <div className="grid grid-cols-1 grid-rows-1 h-6 overflow-hidden">
+          <div className="max-w-4xl">
+            {/* Display Headline & Eyebrow — Anchored from bottom upward so extra lines grow upward */}
+            <div className="grid grid-cols-1 grid-rows-1 items-end">
               {HEADLINES.map((hl, i) => (
-                <p
-                  key={`eyebrow-${i}`}
-                  className={`col-start-1 row-start-1 font-mono text-xs md:text-sm text-muted tracking-[0.25em] uppercase transition-all ${
-                    i === activeSector
-                      ? "opacity-100 translate-y-0 duration-200 delay-75 ease-out visible"
-                      : "opacity-0 -translate-y-3 duration-150 ease-in invisible pointer-events-none"
-                  }`}
-                >
-                  {hl.eyebrow}
-                </p>
-              ))}
-            </div>
-
-            {/* Giant Ultra-Bold Display Headline — Lowered behind torso with expanded tracking & line height */}
-            <div className="grid grid-cols-1 grid-rows-1 min-h-[160px] sm:min-h-[200px] md:min-h-[260px] lg:min-h-[320px] xl:min-h-[360px]">
-              {HEADLINES.map((hl, i) => (
-                <h1
-                  key={`headline-${i}`}
-                  className={`col-start-1 row-start-1 font-display font-black ${hl.fontSize} text-foreground uppercase tracking-[0.035em] ${hl.lineHeight} transition-all ${
+                <div
+                  key={`headline-block-${i}`}
+                  className={`col-start-1 row-start-1 flex flex-col justify-end transition-all ${
                     i === activeSector
                       ? "opacity-100 translate-y-0 scale-100 duration-250 delay-100 ease-out visible"
                       : "opacity-0 translate-y-6 scale-[0.97] duration-150 ease-in invisible pointer-events-none"
                   }`}
-                  style={{
-                    WebkitTextStroke: "1.5px rgba(237, 237, 237, 0.35)",
-                  }}
                 >
-                  {hl.lines.map((line, lIdx) => (
-                    <span key={lIdx} className="block">
-                      {line}
-                    </span>
-                  ))}
-                </h1>
+                  {/* Dynamic Eyebrow label */}
+                  <p className="font-mono text-xs md:text-sm text-muted tracking-[0.25em] uppercase mb-3">
+                    {hl.eyebrow}
+                  </p>
+
+                  {/* Giant Ultra-Bold Display Headline */}
+                  <h1
+                    className={`font-display font-black ${hl.fontSize} text-foreground uppercase tracking-[0.035em] ${hl.lineHeight}`}
+                    style={{
+                      WebkitTextStroke: "1.5px rgba(237, 237, 237, 0.35)",
+                    }}
+                  >
+                    {hl.lines.map((line, lIdx) => (
+                      <span key={lIdx} className="block">
+                        {line}
+                      </span>
+                    ))}
+                  </h1>
+                </div>
               ))}
             </div>
           </div>
