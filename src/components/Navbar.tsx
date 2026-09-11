@@ -28,7 +28,7 @@ export default function Navbar({ links, name }: NavbarProps) {
           .map((l) => ({ label: l.label, href: l.url }))
       : DEFAULT_NAV_LINKS;
 
-  const displayName = name ? (name.includes(" ") ? `${name.split(" ")[0]}.` : `${name}.`) : "YourName.";
+  const displayName = name ? (name.includes(" ") ? `${name.split(" ")[0]}.` : `${name}.`) : "Dev Vashisht";
 
   return (
     <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-card-border/50">
