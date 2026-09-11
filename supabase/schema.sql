@@ -85,6 +85,18 @@ CREATE TABLE IF NOT EXISTS public.links (
     display_order INTEGER NOT NULL DEFAULT 0
 );
 
+-- TABLE: site_visits (Visitor Telemetry)
+CREATE TABLE IF NOT EXISTS public.site_visits (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    page_path TEXT NOT NULL DEFAULT '/',
+    timestamp TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    referrer TEXT,
+    user_agent TEXT,
+    browser TEXT,
+    device_type TEXT,
+    country TEXT DEFAULT 'US'
+);
+
 -- ==============================================================================
 -- 3. ENABLE ROW LEVEL SECURITY (RLS) & CONFIGURE POLICIES
 -- ==============================================================================
@@ -270,6 +282,26 @@ CREATE POLICY "Authenticated links update"
 DROP POLICY IF EXISTS "Authenticated links delete" ON public.links;
 CREATE POLICY "Authenticated links delete"
     ON public.links FOR DELETE
+    TO authenticated
+    USING (true);
+
+-- ── Policies for 'site_visits' ──
+ALTER TABLE public.site_visits ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public site_visits insert" ON public.site_visits;
+CREATE POLICY "Public site_visits insert"
+    ON public.site_visits FOR INSERT
+    WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Authenticated site_visits read" ON public.site_visits;
+CREATE POLICY "Authenticated site_visits read"
+    ON public.site_visits FOR SELECT
+    TO authenticated
+    USING (true);
+
+DROP POLICY IF EXISTS "Authenticated site_visits delete" ON public.site_visits;
+CREATE POLICY "Authenticated site_visits delete"
+    ON public.site_visits FOR DELETE
     TO authenticated
     USING (true);
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Anton, Inter, JetBrains_Mono } from "next/font/google";
 import AmbientGlow from "@/components/AmbientGlow";
+import VisitorTracker from "@/components/VisitorTracker";
 import "./globals.css";
 
 const anton = Anton({
@@ -40,6 +41,7 @@ export default function RootLayout({
     >
       <body className="relative bg-background text-foreground antialiased selection:bg-accent selection:text-background">
         <AmbientGlow />
+        <VisitorTracker />
         {children}
       </body>
     </html>

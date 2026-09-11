@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { LinkItem } from "@/types/database";
 
 const DEFAULT_SOCIALS = [
@@ -67,10 +68,29 @@ export default function Contact({ links, name }: ContactProps) {
           ))}
         </div>
 
-        <div className="mt-20 text-center">
+        <div className="mt-20 flex items-center justify-center gap-2">
           <p className="font-mono text-xs text-muted">
             © {currentYear} {displayName}. All rights reserved.
           </p>
+          <Link
+            href="/admin/login"
+            aria-label="Admin Portal"
+            className="text-muted/40 hover:text-accent transition-colors duration-200 p-1 rounded hover:bg-card-border/30"
+            title="Admin Portal"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="w-3.5 h-3.5 inline opacity-50 hover:opacity-100"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </Link>
         </div>
       </div>
     </section>

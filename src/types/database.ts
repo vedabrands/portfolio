@@ -83,44 +83,115 @@ export interface LinkItem {
   display_order: number;
 }
 
+export interface SiteVisit {
+  id: string;
+  page_path: string;
+  timestamp: string;
+  referrer?: string | null;
+  user_agent?: string | null;
+  browser?: string | null;
+  device_type?: string | null;
+  country?: string | null;
+}
+
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
 export interface Database {
   public: {
     Tables: {
       profile: {
-        Row: Profile;
-        Insert: Omit<Profile, "id"> & { id?: string };
-        Update: Partial<Profile>;
+        Row: {
+          id: string;
+          name: string;
+          title: string;
+          bio: string;
+          hero_headlines: Json;
+          stats: Json;
+          updated_at?: string;
+        };
+        Insert: {
+          id?: string;
+          name?: string;
+          title?: string;
+          bio?: string;
+          hero_headlines?: Json;
+          stats?: Json;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          title?: string;
+          bio?: string;
+          hero_headlines?: Json;
+          stats?: Json;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       skills: {
         Row: Skill;
         Insert: Omit<Skill, "id"> & { id?: string };
         Update: Partial<Skill>;
+        Relationships: [];
       };
       projects: {
         Row: Project;
         Insert: Omit<Project, "id"> & { id?: string };
         Update: Partial<Project>;
+        Relationships: [];
       };
       certifications: {
         Row: Certification;
         Insert: Omit<Certification, "id"> & { id?: string };
         Update: Partial<Certification>;
+        Relationships: [];
       };
       experience: {
         Row: Experience;
         Insert: Omit<Experience, "id"> & { id?: string };
         Update: Partial<Experience>;
+        Relationships: [];
       };
       roadmap: {
         Row: RoadmapItem;
         Insert: Omit<RoadmapItem, "id"> & { id?: string };
         Update: Partial<RoadmapItem>;
+        Relationships: [];
       };
       links: {
         Row: LinkItem;
         Insert: Omit<LinkItem, "id"> & { id?: string };
         Update: Partial<LinkItem>;
+        Relationships: [];
       };
+      site_visits: {
+        Row: SiteVisit;
+        Insert: Omit<SiteVisit, "id" | "timestamp"> & {
+          id?: string;
+          timestamp?: string;
+        };
+        Update: Partial<SiteVisit>;
+        Relationships: [];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }
