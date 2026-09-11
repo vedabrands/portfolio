@@ -46,11 +46,21 @@ export default function AdminLoginPage() {
     try {
       if (isSupabaseConfigured() && supabase) {
         const { data, error: authError } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
 
         if (authError) {
+          if (authError.message.toLowerCase().includes("invalid path")) {
+            throw new Error(
+              "Invalid Supabase URL format in your environment variables. Please ensure NEXT_PUBLIC_SUPABASE_URL is 'https://<project-ref>.supabase.co' (from Supabase Settings > API), NOT the supabase.com/dashboard URL."
+            );
+          }
+          if (authError.message.toLowerCase().includes("invalid login credentials")) {
+            throw new Error(
+              "Invalid email or password. Please verify the user exists in Supabase Dashboard > Authentication > Users, or create them there."
+            );
+          }
           throw authError;
         }
 
