@@ -295,7 +295,7 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 flex items-center justify-center select-none pointer-events-auto cursor-ew-resize"
+      className="relative w-full h-[440px] sm:h-[500px] md:h-[560px] lg:h-[620px] xl:h-[660px] flex items-center justify-center select-none pointer-events-auto cursor-ew-resize focus:outline-none focus-visible:outline-none"
       tabIndex={0}
       onKeyDown={onKeyDown}
       onPointerMove={onPointerMove}
@@ -326,7 +326,7 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
       <canvas
         ref={canvasRef}
         className={`
-          max-h-[85vh] w-auto object-contain
+          max-h-full max-w-full w-auto h-auto object-contain
           transition-opacity duration-500
           ${ready || loaded > 0 ? "opacity-100" : "opacity-0"}
         `}
@@ -346,8 +346,8 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
             }}
             onPointerUp={stopHold}
             onPointerLeave={stopHold}
-            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30
-              w-11 h-11 md:w-13 md:h-13 rounded-full
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-30
+              w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full
               bg-card/80 border border-card-border/90 backdrop-blur-md
               text-foreground hover:text-white hover:bg-card
               transition-all duration-200 flex items-center justify-center
@@ -357,8 +357,8 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
             title="Click to step ~20 frames, hold to rotate"
           >
             <svg
-              width="22"
-              height="22"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -378,8 +378,8 @@ export default function HeroScrubber({ onFrameChange }: HeroScrubberProps) {
             }}
             onPointerUp={stopHold}
             onPointerLeave={stopHold}
-            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30
-              w-11 h-11 md:w-13 md:h-13 rounded-full
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-30
+              w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full
               bg-card/80 border border-card-border/90 backdrop-blur-md
               text-foreground hover:text-white hover:bg-card
               transition-all duration-200 flex items-center justify-center
