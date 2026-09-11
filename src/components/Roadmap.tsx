@@ -76,11 +76,12 @@ export default function Roadmap() {
     return () => window.removeEventListener("resize", updateWavePath);
   }, []);
 
-  // Moving dot loop & auto-highlight synchronization
+  // Moving dot loop & auto-highlight synchronization (slow, deliberate pace)
   useEffect(() => {
     let animId: number;
     let startTime: number | null = null;
-    const DURATION = 9000; // 9s total loop (~2.4s per segment + reset)
+    const DURATION = 18000; // 18s total loop (~5.0s per segment + smooth reset)
+    const TRAVEL_TIME = 15000; // 15s forward travel across the 3 segments
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
@@ -90,37 +91,36 @@ export default function Roadmap() {
       if (pathEl && pathEl.getTotalLength) {
         const totalLen = pathEl.getTotalLength();
         if (totalLen > 0) {
-          // 0 to 7400ms: travels forward from Card 1 to Card 4
-          // 7400 to 8200ms: holds at Card 4 & fades out
-          // 8200 to 8600ms: moves to start while hidden
-          // 8600 to 9000ms: fades in at Card 1
-          if (elapsed < 7400) {
-            const travelProgress = elapsed / 7400;
+          // 0 to 15000ms: travels forward from Card 1 to Card 4 (5.0s per segment)
+          // 15000 to 16500ms: holds at Card 4 & fades out
+          // 16500 to 18000ms: resets and fades in at Card 1
+          if (elapsed < TRAVEL_TIME) {
+            const travelProgress = elapsed / TRAVEL_TIME;
             const pt = pathEl.getPointAtLength(travelProgress * totalLen);
             setDotPos({ x: pt.x, y: pt.y, opacity: 1 });
 
             // Auto-highlight card based on progress
-            if (travelProgress < 0.14) {
+            if (travelProgress < 0.12) {
               setActiveDotCard(0);
-            } else if (travelProgress >= 0.26 && travelProgress <= 0.42) {
+            } else if (travelProgress >= 0.28 && travelProgress <= 0.44) {
               setActiveDotCard(1);
-            } else if (travelProgress >= 0.58 && travelProgress <= 0.74) {
+            } else if (travelProgress >= 0.61 && travelProgress <= 0.77) {
               setActiveDotCard(2);
-            } else if (travelProgress >= 0.88) {
+            } else if (travelProgress >= 0.92) {
               setActiveDotCard(3);
             } else {
               setActiveDotCard(null);
             }
-          } else if (elapsed < 8200) {
+          } else if (elapsed < 16500) {
             // Fade out at card 4
             const pt = pathEl.getPointAtLength(totalLen);
-            const fade = 1 - (elapsed - 7400) / 800;
+            const fade = 1 - (elapsed - TRAVEL_TIME) / 1500;
             setDotPos({ x: pt.x, y: pt.y, opacity: Math.max(0, fade) });
             setActiveDotCard(3);
           } else {
-            // Reset to card 1
+            // Reset to card 1 and fade in
             const pt = pathEl.getPointAtLength(0);
-            const fadeIn = (elapsed - 8200) / 800;
+            const fadeIn = (elapsed - 16500) / 1500;
             setDotPos({ x: pt.x, y: pt.y, opacity: Math.min(1, fadeIn) });
             setActiveDotCard(0);
           }
@@ -136,7 +136,7 @@ export default function Roadmap() {
 
   return (
     <section id="roadmap" className="py-20 md:py-32 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-12">
         <div className="text-center mb-16 md:mb-24">
           <p className="font-mono text-xs text-muted tracking-[0.2em] uppercase mb-4">
             {"// Engineering Roadmap"}
@@ -147,7 +147,7 @@ export default function Roadmap() {
         </div>
 
         {/* Roadmap Staggered Wave Container */}
-        <div ref={containerRef} className="relative pb-12 lg:pb-24">
+        <div ref={containerRef} className="relative pb-16 lg:pb-32">
           {/* Connecting SVG Curved Wave Path & Moving Glowing Dot */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none z-0 hidden lg:block overflow-visible"
@@ -225,7 +225,7 @@ export default function Roadmap() {
           </svg>
 
           {/* Staggered Wave Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12 xl:gap-16 relative z-10">
             {roadmapCards.map((card, idx) => {
               const isEven = idx % 2 === 1; // Cards 1 and 3 (0-indexed) are lower
               const isActive = hoveredCard === idx || activeDotCard === idx;
@@ -239,7 +239,7 @@ export default function Roadmap() {
                   onMouseEnter={() => setHoveredCard(idx)}
                   onMouseLeave={() => setHoveredCard(null)}
                   className={`group relative bg-gradient-to-b from-[#18181b] to-[#111113] border rounded-2xl p-7 flex flex-col justify-between min-h-[260px] overflow-hidden cursor-pointer transition-all duration-500 ease-out transform ${
-                    isEven ? "lg:translate-y-16" : "lg:translate-y-0"
+                    isEven ? "lg:translate-y-20" : "lg:translate-y-0"
                   } ${
                     isActive
                       ? "scale-[1.04] z-30 border-accent/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15),0_0_32px_rgba(217,164,65,0.25),0_12px_28px_rgba(0,0,0,0.5)]"
