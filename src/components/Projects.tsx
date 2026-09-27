@@ -1,6 +1,10 @@
+import Image from "next/image";
 import type { Project } from "@/types/database";
 
-const DEFAULT_PROJECTS = [
+const DEFAULT_PROJECTS: (Project & {
+  floatClass?: string;
+  features?: string[];
+})[] = [
   {
     id: "1",
     title: "AI Content Generator",
@@ -128,13 +132,23 @@ export default function Projects({ projects }: ProjectsProps) {
                   <div className="project-flipper preserve-3d w-full h-full relative">
                     {/* ── FRONT FACE ── */}
                     <div className="absolute inset-0 backface-hidden rounded-2xl bg-card border border-card-border/90 flex flex-col justify-between overflow-hidden shadow-lg select-none">
-                      {/* Thumbnail placeholder */}
-                      <div className="relative h-48 bg-gradient-to-b from-card-border/30 to-card-border/10 flex items-center justify-center border-b border-card-border/60">
-                        <span className="font-mono text-xs text-muted/50 tracking-widest uppercase">
-                          Project Thumbnail
-                        </span>
+                      {/* Thumbnail Container */}
+                      <div className="relative h-48 bg-gradient-to-b from-card-border/30 to-card-border/10 flex items-center justify-center border-b border-card-border/60 overflow-hidden">
+                        {project.image_url ? (
+                          <Image
+                            src={project.image_url}
+                            alt={project.title}
+                            fill
+                            className="object-cover transition-transform duration-500 hover:scale-105"
+                            unoptimized
+                          />
+                        ) : (
+                          <span className="font-mono text-xs text-muted/50 tracking-widest uppercase">
+                            Project Thumbnail
+                          </span>
+                        )}
                         {/* Interactive Flip Hint Badge */}
-                        <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-mono tracking-wider text-muted/70 bg-background/80 border border-card-border/70 rounded-full flex items-center gap-1.5 backdrop-blur-sm">
+                        <span className="absolute top-3 right-3 px-2.5 py-1 text-[10px] font-mono tracking-wider text-muted/70 bg-background/80 border border-card-border/70 rounded-full flex items-center gap-1.5 backdrop-blur-sm z-10">
                           <span>↻</span> Flip Details
                         </span>
                       </div>
