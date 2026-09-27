@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { RoadmapItem } from "@/types/database";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUuid } from "@/lib/supabase";
 
 interface RoadmapTabProps {
   initialRoadmap: RoadmapItem[];
@@ -53,18 +53,54 @@ export default function RoadmapTab({
       if (editingId) {
         // UPDATE
         if (isSupabaseConfigured() && supabase) {
-          const { error } = await supabase
-            .from("roadmap")
-            .update({
-              label: label.trim() || null,
-              title: title.trim(),
-              description: description.trim(),
-              tag: tag.trim() || null,
-              tech: tag.trim() || null,
-            })
-            .eq("id", editingId);
+          if (isValidUuid(editingId)) {
+            const { error } = await supabase
+              .from("roadmap")
+              .update({
+                label: label.trim() || null,
+                title: title.trim(),
+                description: description.trim(),
+                tag: tag.trim() || null,
+                tech: tag.trim() || null,
+              })
+              .eq("id", editingId);
 
-          if (error) throw error;
+            if (error) throw error;
+          } else {
+            const nextOrder =
+              items.length > 0
+                ? Math.max(...items.map((it) => it.display_order)) + 1
+                : 1;
+
+            const autoLabel = label.trim() || `ROOT 0${items.length + 1}`;
+
+            const { data, error } = await supabase
+              .from("roadmap")
+              .insert({
+                label: autoLabel,
+                title: title.trim(),
+                description: description.trim(),
+                tag: tag.trim() || null,
+                tech: tag.trim() || null,
+                display_order: nextOrder,
+              })
+              .select()
+              .single();
+
+            if (error) throw error;
+            if (data) {
+              setItems(items.map((it) => (it.id === editingId ? data : it)));
+              setMessage({ text: `Updated roadmap track "${title}"!`, type: "success" });
+              cancelEdit();
+              await fetch("/api/revalidate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path: "/" }),
+              });
+              onSaved();
+              return;
+            }
+          }
         }
 
         setItems(
@@ -146,8 +182,10 @@ export default function RoadmapTab({
     setSaving(true);
     try {
       if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase.from("roadmap").delete().eq("id", id);
-        if (error) throw error;
+        if (isValidUuid(id)) {
+          const { error } = await supabase.from("roadmap").delete().eq("id", id);
+          if (error) throw error;
+        }
       }
 
       setItems(items.filter((it) => it.id !== id));
@@ -187,10 +225,12 @@ export default function RoadmapTab({
     try {
       if (isSupabaseConfigured() && supabase) {
         for (const it of updated) {
-          await supabase
-            .from("roadmap")
-            .update({ display_order: it.display_order })
-            .eq("id", it.id);
+          if (isValidUuid(it.id)) {
+            await supabase
+              .from("roadmap")
+              .update({ display_order: it.display_order })
+              .eq("id", it.id);
+          }
         }
       }
 

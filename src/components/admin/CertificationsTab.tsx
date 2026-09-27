@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Certification } from "@/types/database";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUuid } from "@/lib/supabase";
 import ImageUploader from "./ImageUploader";
 import Image from "next/image";
 
@@ -56,41 +56,81 @@ export default function CertificationsTab({
     setMessage(null);
 
     try {
-      if (isSupabaseConfigured() && supabase) {
-        if (editingId) {
-          // UPDATE
-          const { error } = await supabase
-            .from("certifications")
-            .update({
-              title: title.trim(),
-              issuer: issuer.trim(),
-              date_issued: dateIssued.trim(),
-              description: description.trim() || null,
-              image_url: imageUrl.trim() || null,
-            })
-            .eq("id", editingId);
+      if (editingId) {
+        // UPDATE
+        if (isSupabaseConfigured() && supabase) {
+          if (isValidUuid(editingId)) {
+            const { error } = await supabase
+              .from("certifications")
+              .update({
+                title: title.trim(),
+                issuer: issuer.trim(),
+                date_issued: dateIssued.trim() || "2024",
+                description: description.trim() || null,
+                image_url: imageUrl.trim() || null,
+              })
+              .eq("id", editingId);
 
-          if (error) throw error;
+            if (error) throw error;
+          } else {
+            const nextOrder =
+              certs.length > 0
+                ? Math.max(...certs.map((c) => c.display_order)) + 1
+                : 1;
 
-          // Update local state optimistically
-          setCerts(certs.map(c => c.id === editingId ? {
-            ...c,
-            title: title.trim(),
-            issuer: issuer.trim(),
-            date_issued: dateIssued.trim(),
-            description: description.trim() || null,
-            image_url: imageUrl.trim() || null,
-          } : c));
+            const { data, error } = await supabase
+              .from("certifications")
+              .insert({
+                title: title.trim(),
+                issuer: issuer.trim(),
+                date_issued: dateIssued.trim() || "2024",
+                description: description.trim() || null,
+                image_url: imageUrl.trim() || null,
+                display_order: nextOrder,
+              })
+              .select()
+              .single();
 
-          setMessage({ text: `Updated certification "${title}"!`, type: "success" });
-          cancelEdit();
-        } else {
-          // INSERT
-          const nextOrder =
-            certs.length > 0
-              ? Math.max(...certs.map(c => c.display_order)) + 1
-              : 1;
+            if (error) throw error;
+            if (data) {
+              setCerts(certs.map((c) => (c.id === editingId ? data : c)));
+              setMessage({ text: `Updated certification "${title}"!`, type: "success" });
+              cancelEdit();
+              await fetch("/api/revalidate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path: "/" }),
+              });
+              onSaved();
+              return;
+            }
+          }
+        }
 
+        setCerts(
+          certs.map((c) =>
+            c.id === editingId
+              ? {
+                  ...c,
+                  title: title.trim(),
+                  issuer: issuer.trim(),
+                  date_issued: dateIssued.trim() || "2024",
+                  description: description.trim() || null,
+                  image_url: imageUrl.trim() || null,
+                }
+              : c
+          )
+        );
+        setMessage({ text: `Updated certification "${title}"!`, type: "success" });
+        cancelEdit();
+      } else {
+        // INSERT
+        const nextOrder =
+          certs.length > 0
+            ? Math.max(...certs.map((c) => c.display_order)) + 1
+            : 1;
+
+        if (isSupabaseConfigured() && supabase) {
           const { data, error } = await supabase
             .from("certifications")
             .insert({
@@ -105,30 +145,8 @@ export default function CertificationsTab({
             .single();
 
           if (error) throw error;
-          if (data) {
-            setCerts([...certs, data]);
-            setMessage({ text: `Added certification "${title}"!`, type: "success" });
-            cancelEdit();
-          }
-        }
-      } else {
-        // Supabase not configured: local operation
-        if (editingId) {
-          setCerts(certs.map(c => c.id === editingId ? {
-            ...c,
-            title: title.trim(),
-            issuer: issuer.trim(),
-            date_issued: dateIssued.trim(),
-            description: description.trim() || null,
-            image_url: imageUrl.trim() || null,
-          } : c));
-          setMessage({ text: `Updated certification "${title}"!`, type: "success" });
-          cancelEdit();
+          if (data) setCerts([...certs, data]);
         } else {
-          const nextOrder =
-            certs.length > 0
-              ? Math.max(...certs.map(c => c.display_order)) + 1
-              : 1;
           const newLocalItem: Certification = {
             id: `cert-${Date.now()}`,
             title: title.trim(),
@@ -139,12 +157,12 @@ export default function CertificationsTab({
             display_order: nextOrder,
           };
           setCerts([...certs, newLocalItem]);
-          setMessage({ text: `Added certification "${title}"!`, type: "success" });
-          cancelEdit();
         }
+
+        setMessage({ text: `Added certification "${title}"!`, type: "success" });
+        cancelEdit();
       }
 
-      // Revalidate and onSaved (common for both DB and local)
       await fetch("/api/revalidate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -165,11 +183,13 @@ export default function CertificationsTab({
     setSaving(true);
     try {
       if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase
-          .from("certifications")
-          .delete()
-          .eq("id", id);
-        if (error) throw error;
+        if (isValidUuid(id)) {
+          const { error } = await supabase
+            .from("certifications")
+            .delete()
+            .eq("id", id);
+          if (error) throw error;
+        }
       }
 
       setCerts(certs.filter((c) => c.id !== id));
@@ -207,12 +227,15 @@ export default function CertificationsTab({
     setCerts(updated);
 
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
-      for (const it of updated) {
-        await supabase
-          .from("certifications")
-          .update({ display_order: it.display_order })
-          .eq("id", it.id);
+      if (isSupabaseConfigured() && supabase) {
+        for (const it of updated) {
+          if (isValidUuid(it.id)) {
+            await supabase
+              .from("certifications")
+              .update({ display_order: it.display_order })
+              .eq("id", it.id);
+          }
+        }
       }
       await fetch("/api/revalidate", {
         method: "POST",

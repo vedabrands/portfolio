@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Profile, StatsData } from "@/types/database";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUuid } from "@/lib/supabase";
 
 interface AboutStatsTabProps {
   initialProfile: Profile | null;
@@ -90,7 +90,21 @@ export default function AboutStatsTab({
       });
 
       if (isSupabaseConfigured() && supabase) {
-        if (initialProfile?.id) {
+        let targetId: string | null = isValidUuid(initialProfile?.id) ? initialProfile!.id : null;
+
+        if (!targetId) {
+          const { data: existing } = await supabase
+            .from("profile")
+            .select("id")
+            .limit(1)
+            .maybeSingle();
+
+          if (existing?.id && isValidUuid(existing.id)) {
+            targetId = existing.id;
+          }
+        }
+
+        if (targetId) {
           const { error } = await supabase
             .from("profile")
             .update({
@@ -98,7 +112,7 @@ export default function AboutStatsTab({
               stats: statsObj,
               updated_at: new Date().toISOString(),
             })
-            .eq("id", initialProfile.id);
+            .eq("id", targetId);
           if (error) throw error;
         } else {
           const { error } = await supabase.from("profile").insert({

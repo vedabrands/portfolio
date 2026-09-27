@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { LinkItem } from "@/types/database";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUuid } from "@/lib/supabase";
 
 interface LinksTabProps {
   initialLinks: LinkItem[];
@@ -48,54 +48,53 @@ export default function LinksTab({
     setMessage(null);
 
     try {
-      if (isSupabaseConfigured() && supabase) {
-        if (editingId) {
-          // UPDATE
-          const { error } = await supabase
-            .from("links")
-            .update({
-              label: label.trim(),
-              url: url.trim(),
-              icon_name: iconName.trim() || null,
-            })
-            .eq("id", editingId);
+      if (editingId) {
+        // UPDATE
+        if (isSupabaseConfigured() && supabase) {
+          if (isValidUuid(editingId)) {
+            const { error } = await supabase
+              .from("links")
+              .update({
+                label: label.trim(),
+                url: url.trim(),
+                icon_name: iconName.trim() || null,
+              })
+              .eq("id", editingId);
 
-          if (error) throw error;
-        } else {
-          // INSERT
-          const nextOrder =
-            links.length > 0
-              ? Math.max(...links.map((it) => it.display_order)) + 1
-              : 1;
+            if (error) throw error;
+          } else {
+            const nextOrder =
+              links.length > 0
+                ? Math.max(...links.map((it) => it.display_order)) + 1
+                : 1;
 
-          const { data, error } = await supabase
-            .from("links")
-            .insert({
-              label: label.trim(),
-              url: url.trim(),
-              icon_name: iconName.trim() || null,
-              display_order: nextOrder,
-            })
-            .select()
-            .single();
+            const { data, error } = await supabase
+              .from("links")
+              .insert({
+                label: label.trim(),
+                url: url.trim(),
+                icon_name: iconName.trim() || null,
+                display_order: nextOrder,
+              })
+              .select()
+              .single();
 
-          if (error) throw error;
-          if (data) {
-            setLinks([...links, data]);
-            setMessage({ text: `Added link "${label}"!`, type: "success" });
-            cancelEdit();
-            await fetch("/api/revalidate", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ path: "/" }),
-            });
-            onSaved();
-            return;
+            if (error) throw error;
+            if (data) {
+              setLinks(links.map((it) => (it.id === editingId ? data : it)));
+              setMessage({ text: `Updated link "${label}"!`, type: "success" });
+              cancelEdit();
+              await fetch("/api/revalidate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path: "/" }),
+              });
+              onSaved();
+              return;
+            }
           }
         }
-      }
 
-      if (editingId) {
         setLinks(
           links.map((it) =>
             it.id === editingId
@@ -111,18 +110,37 @@ export default function LinksTab({
         setMessage({ text: `Updated link "${label}"!`, type: "success" });
         cancelEdit();
       } else {
+        // INSERT
         const nextOrder =
           links.length > 0
             ? Math.max(...links.map((it) => it.display_order)) + 1
             : 1;
-        const newLocalItem: LinkItem = {
-          id: `link-${Date.now()}`,
-          label: label.trim(),
-          url: url.trim(),
-          icon_name: iconName.trim() || null,
-          display_order: nextOrder,
-        };
-        setLinks([...links, newLocalItem]);
+
+        if (isSupabaseConfigured() && supabase) {
+          const { data, error } = await supabase
+            .from("links")
+            .insert({
+              label: label.trim(),
+              url: url.trim(),
+              icon_name: iconName.trim() || null,
+              display_order: nextOrder,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          if (data) setLinks([...links, data]);
+        } else {
+          const newLocalItem: LinkItem = {
+            id: `link-${Date.now()}`,
+            label: label.trim(),
+            url: url.trim(),
+            icon_name: iconName.trim() || null,
+            display_order: nextOrder,
+          };
+          setLinks([...links, newLocalItem]);
+        }
+
         setMessage({ text: `Added link "${label}"!`, type: "success" });
         cancelEdit();
       }
@@ -132,7 +150,6 @@ export default function LinksTab({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path: "/" }),
       });
-
       onSaved();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to save link.";
@@ -148,8 +165,10 @@ export default function LinksTab({
     setSaving(true);
     try {
       if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase.from("links").delete().eq("id", id);
-        if (error) throw error;
+        if (isValidUuid(id)) {
+          const { error } = await supabase.from("links").delete().eq("id", id);
+          if (error) throw error;
+        }
       }
 
       setLinks(links.filter((it) => it.id !== id));
@@ -187,12 +206,15 @@ export default function LinksTab({
     setLinks(updated);
 
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
-      for (const it of updated) {
-        await supabase
-          .from("links")
-          .update({ display_order: it.display_order })
-          .eq("id", it.id);
+      if (isSupabaseConfigured() && supabase) {
+        for (const it of updated) {
+          if (isValidUuid(it.id)) {
+            await supabase
+              .from("links")
+              .update({ display_order: it.display_order })
+              .eq("id", it.id);
+          }
+        }
       }
       await fetch("/api/revalidate", {
         method: "POST",

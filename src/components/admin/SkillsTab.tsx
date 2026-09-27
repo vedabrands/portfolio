@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Skill } from "@/types/database";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUuid } from "@/lib/supabase";
 
 interface SkillsTabProps {
   initialSkills: Skill[];
@@ -79,15 +79,40 @@ export default function SkillsTab({
     setSaving(true);
     try {
       if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase
-          .from("skills")
-          .update({
-            name: updatedName,
-            category: updatedCategory,
-          })
-          .eq("id", skill.id);
+        if (isValidUuid(skill.id)) {
+          const { error } = await supabase
+            .from("skills")
+            .update({
+              name: updatedName,
+              category: updatedCategory,
+            })
+            .eq("id", skill.id);
 
-        if (error) throw error;
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase
+            .from("skills")
+            .insert({
+              name: updatedName,
+              category: updatedCategory,
+              display_order: skill.display_order || 1,
+            })
+            .select()
+            .single();
+
+          if (error) throw error;
+          if (data) {
+            setSkills(skills.map((s) => (s.id === skill.id ? data : s)));
+            await fetch("/api/revalidate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ path: "/" }),
+            });
+            setMessage({ text: `Updated skill "${updatedName}"!`, type: "success" });
+            onSaved();
+            return;
+          }
+        }
       }
 
       setSkills(
@@ -120,8 +145,10 @@ export default function SkillsTab({
     setSaving(true);
     try {
       if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase.from("skills").delete().eq("id", id);
-        if (error) throw error;
+        if (isValidUuid(id)) {
+          const { error } = await supabase.from("skills").delete().eq("id", id);
+          if (error) throw error;
+        }
       }
 
       setSkills(skills.filter((s) => s.id !== id));
@@ -162,10 +189,12 @@ export default function SkillsTab({
     try {
       if (isSupabaseConfigured() && supabase) {
         for (const item of updated) {
-          await supabase
-            .from("skills")
-            .update({ display_order: item.display_order })
-            .eq("id", item.id);
+          if (isValidUuid(item.id)) {
+            await supabase
+              .from("skills")
+              .update({ display_order: item.display_order })
+              .eq("id", item.id);
+          }
         }
       }
 

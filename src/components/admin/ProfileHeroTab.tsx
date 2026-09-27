@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Profile, HeadlineItem } from "@/types/database";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUuid } from "@/lib/supabase";
 
 interface ProfileHeroTabProps {
   initialProfile: Profile | null;
@@ -79,11 +79,26 @@ export default function ProfileHeroTab({
       };
 
       if (isSupabaseConfigured() && supabase) {
-        if (profileId) {
+        let targetId: string | null = isValidUuid(profileId) ? profileId : null;
+
+        if (!targetId) {
+          const { data: existing } = await supabase
+            .from("profile")
+            .select("id")
+            .limit(1)
+            .maybeSingle();
+
+          if (existing?.id && isValidUuid(existing.id)) {
+            targetId = existing.id;
+            setProfileId(existing.id);
+          }
+        }
+
+        if (targetId) {
           const { error } = await supabase
             .from("profile")
             .update(payload)
-            .eq("id", profileId);
+            .eq("id", targetId);
           if (error) throw error;
         } else {
           const { data, error } = await supabase
@@ -96,7 +111,7 @@ export default function ProfileHeroTab({
             .select()
             .single();
           if (error) throw error;
-          if (data) setProfileId(data.id);
+          if (data?.id) setProfileId(data.id);
         }
       }
 

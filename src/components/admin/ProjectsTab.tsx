@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Project } from "@/types/database";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUuid } from "@/lib/supabase";
 import ImageUploader from "./ImageUploader";
 import Image from "next/image";
 
@@ -70,20 +70,57 @@ export default function ProjectsTab({
       if (editingId) {
         // UPDATE
         if (isSupabaseConfigured() && supabase) {
-          const { error } = await supabase
-            .from("projects")
-            .update({
-              title: title.trim(),
-              description: description.trim(),
-              brief_detail: briefDetail.trim() || null,
-              tags: tagsArray,
-              image_url: imageUrl.trim() || null,
-              project_url: projectUrl.trim() || "#",
-              github_url: githubUrl.trim() || "#",
-            })
-            .eq("id", editingId);
+          if (isValidUuid(editingId)) {
+            const { error } = await supabase
+              .from("projects")
+              .update({
+                title: title.trim(),
+                description: description.trim(),
+                brief_detail: briefDetail.trim() || null,
+                tags: tagsArray,
+                image_url: imageUrl.trim() || null,
+                project_url: projectUrl.trim() || "#",
+                github_url: githubUrl.trim() || "#",
+              })
+              .eq("id", editingId);
 
-          if (error) throw error;
+            if (error) throw error;
+          } else {
+            // Default mock item being saved to Supabase for the first time
+            const nextOrder =
+              projects.length > 0
+                ? Math.max(...projects.map((p) => p.display_order)) + 1
+                : 1;
+
+            const { data, error } = await supabase
+              .from("projects")
+              .insert({
+                title: title.trim(),
+                description: description.trim(),
+                brief_detail: briefDetail.trim() || null,
+                tags: tagsArray,
+                image_url: imageUrl.trim() || null,
+                project_url: projectUrl.trim() || "#",
+                github_url: githubUrl.trim() || "#",
+                display_order: nextOrder,
+              })
+              .select()
+              .single();
+
+            if (error) throw error;
+            if (data) {
+              setProjects(projects.map((p) => (p.id === editingId ? data : p)));
+              setMessage({ text: `Updated project "${title}"!`, type: "success" });
+              cancelEdit();
+              await fetch("/api/revalidate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path: "/" }),
+              });
+              onSaved();
+              return;
+            }
+          }
         }
 
         setProjects(
@@ -170,8 +207,10 @@ export default function ProjectsTab({
     setSaving(true);
     try {
       if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase.from("projects").delete().eq("id", id);
-        if (error) throw error;
+        if (isValidUuid(id)) {
+          const { error } = await supabase.from("projects").delete().eq("id", id);
+          if (error) throw error;
+        }
       }
 
       setProjects(projects.filter((p) => p.id !== id));
@@ -211,10 +250,12 @@ export default function ProjectsTab({
     try {
       if (isSupabaseConfigured() && supabase) {
         for (const it of updated) {
-          await supabase
-            .from("projects")
-            .update({ display_order: it.display_order })
-            .eq("id", it.id);
+          if (isValidUuid(it.id)) {
+            await supabase
+              .from("projects")
+              .update({ display_order: it.display_order })
+              .eq("id", it.id);
+          }
         }
       }
       await fetch("/api/revalidate", {

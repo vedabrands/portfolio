@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Experience } from "@/types/database";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, isValidUuid } from "@/lib/supabase";
 
 interface ExperienceTabProps {
   initialExperience: Experience[];
@@ -57,18 +57,52 @@ export default function ExperienceTab({
       if (isSupabaseConfigured() && supabase) {
         if (editingId) {
           // UPDATE
-          const { error } = await supabase
-            .from("experience")
-            .update({
-              role: role.trim(),
-              company: company.trim(),
-              start_date: startDate.trim(),
-              end_date: endDate.trim() || "Present",
-              description: description.trim() || null,
-            })
-            .eq("id", editingId);
+          if (isValidUuid(editingId)) {
+            const { error } = await supabase
+              .from("experience")
+              .update({
+                role: role.trim(),
+                company: company.trim(),
+                start_date: startDate.trim(),
+                end_date: endDate.trim() || "Present",
+                description: description.trim() || null,
+              })
+              .eq("id", editingId);
 
-          if (error) throw error;
+            if (error) throw error;
+          } else {
+            const nextOrder =
+              items.length > 0
+                ? Math.max(...items.map((it) => it.display_order)) + 1
+                : 1;
+
+            const { data, error } = await supabase
+              .from("experience")
+              .insert({
+                role: role.trim(),
+                company: company.trim(),
+                start_date: startDate.trim() || "2023",
+                end_date: endDate.trim() || "Present",
+                description: description.trim() || null,
+                display_order: nextOrder,
+              })
+              .select()
+              .single();
+
+            if (error) throw error;
+            if (data) {
+              setItems(items.map((it) => (it.id === editingId ? data : it)));
+              setMessage({ text: `Updated experience "${role} at ${company}"!`, type: "success" });
+              cancelEdit();
+              await fetch("/api/revalidate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path: "/" }),
+              });
+              onSaved();
+              return;
+            }
+          }
         } else {
           // INSERT
           const nextOrder =
@@ -162,8 +196,10 @@ export default function ExperienceTab({
     setSaving(true);
     try {
       if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase.from("experience").delete().eq("id", id);
-        if (error) throw error;
+        if (isValidUuid(id)) {
+          const { error } = await supabase.from("experience").delete().eq("id", id);
+          if (error) throw error;
+        }
       }
 
       setItems(items.filter((it) => it.id !== id));
@@ -201,12 +237,15 @@ export default function ExperienceTab({
     setItems(updated);
 
     try {
-      if (!supabase) throw new Error("Supabase is not configured.");
-      for (const it of updated) {
-        await supabase
-          .from("experience")
-          .update({ display_order: it.display_order })
-          .eq("id", it.id);
+      if (isSupabaseConfigured() && supabase) {
+        for (const it of updated) {
+          if (isValidUuid(it.id)) {
+            await supabase
+              .from("experience")
+              .update({ display_order: it.display_order })
+              .eq("id", it.id);
+          }
+        }
       }
       await fetch("/api/revalidate", {
         method: "POST",
